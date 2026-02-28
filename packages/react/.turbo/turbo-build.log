@@ -27,14 +27,45 @@ Source code: https://github.com/asdf-vm/asdf
 [34mCLI[39m Target: es2022
 [34mESM[39m Build start
 [34mCJS[39m Build start
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mUnexpected "..."[0m
+
+    src/components/organisms/Widget/Widget.tsx:103:0:
+[37m      103 │ [32m...[37m
+          ╵ [32m~~~[0m
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mUnexpected "..."[0m
+
+    src/components/organisms/Widget/Widget.tsx:103:0:
+[37m      103 │ [32m...[37m
+          ╵ [32m~~~[0m
+
 DTS Build start
-[32mCJS[39m [1mdist/index.cjs [22m[32m13.35 KB[39m
-[32mCJS[39m [1mdist/index.css [22m[32m21.82 KB[39m
-[32mCJS[39m ⚡️ Build success in 465ms
-[32mESM[39m [1mdist/index.css [22m[32m21.82 KB[39m
-[32mESM[39m [1mdist/index.js  [22m[32m10.51 KB[39m
-[32mESM[39m ⚡️ Build success in 467ms
-DTS ⚡️ Build success in 1223ms
-DTS dist/index.d.ts  1.58 KB
-DTS dist/index.d.cts 1.58 KB
+[31mESM[39m [31mBuild failed[39m
+[31mCJS[39m [31mBuild failed[39m
+[31mError: Build failed with 1 error:
+src/components/organisms/Widget/Widget.tsx:103:0: ERROR: Unexpected "..."
+    at failureErrorWithLog (/home/lucas/Developer/openknowledge/node_modules/esbuild/lib/main.js:1467:15)
+    at /home/lucas/Developer/openknowledge/node_modules/esbuild/lib/main.js:926:25
+    at runOnEndCallbacks (/home/lucas/Developer/openknowledge/node_modules/esbuild/lib/main.js:1307:45)
+    at buildResponseToResult (/home/lucas/Developer/openknowledge/node_modules/esbuild/lib/main.js:924:7)
+    at /home/lucas/Developer/openknowledge/node_modules/esbuild/lib/main.js:951:16
+    at responseCallbacks.<computed> (/home/lucas/Developer/openknowledge/node_modules/esbuild/lib/main.js:603:9)
+    at handleIncomingPacket (/home/lucas/Developer/openknowledge/node_modules/esbuild/lib/main.js:658:12)
+    at Socket.readFromStdout (/home/lucas/Developer/openknowledge/node_modules/esbuild/lib/main.js:581:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)[39m
+src/components/organisms/Widget/Widget.tsx(103,1): error TS1128: Declaration or statement expected.
+src/components/organisms/Widget/Widget.tsx(1,15): error TS2300: Duplicate identifier 'Config'.
+src/components/organisms/Widget/Widget.tsx(1,23): error TS2300: Duplicate identifier 'LoaderResult'.
+src/components/organisms/Widget/Widget.tsx(102,15): error TS2300: Duplicate identifier 'Config'.
+src/components/organisms/Widget/Widget.tsx(102,23): error TS2300: Duplicate identifier 'LoaderResult'.
+
+DTS Build error
+⠙[1G[0K[1mnpm[22m [31merror[39m Lifecycle script `build` failed with error:
+⠙[1G[0K[1mnpm[22m [31merror[39m [94mcode[39m [33m1[39m
+⠙[1G[0K[1mnpm[22m [31merror[39m [94mpath[39m /home/lucas/Developer/openknowledge/packages/react
+⠙[1G[0K[1mnpm[22m [31merror[39m [94mworkspace[39m @openknowledge/react@0.1.0
+⠙[1G[0K[1mnpm[22m [31merror[39m [94mlocation[39m /home/lucas/Developer/openknowledge/packages/react
+⠙[1G[0K[1mnpm[22m [31merror[39m command failed
+⠙[1G[0K[1mnpm[22m [31merror[39m [94mcommand[39m sh -c tsup src/index.ts --format esm,cjs --dts --external react,react-dom
 ⠙[1G[0K

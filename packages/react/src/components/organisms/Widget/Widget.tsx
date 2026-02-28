@@ -1,9 +1,11 @@
+import type { Config, LoaderResult } from '@openknowledge/core'
 import * as Popover from '@radix-ui/react-popover'
 import { type ClassValue, clsx } from 'clsx'
-import { Bot, Maximize2, MessageSquare, Minimize2, Send, X } from 'lucide-react'
+import { Bot, Maximize2, MessageSquare, Minimize2, Send, User, X } from 'lucide-react'
 import type React from 'react'
-import { createContext, type ReactNode, useContext, useMemo, useState } from 'react'
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { type Message, useKnowledge } from '../../../hooks/use-knowledge.js'
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -83,6 +85,9 @@ interface WidgetContextValue {
   icons: WidgetIcons
   preventCloseOnOutsideClick?: boolean
   showOnlineStatus?: boolean
+  messages: Message[]
+  isLoading: boolean
+  sendMessage: (text: string) => Promise<void>
 }
 
 const WidgetContext = createContext<WidgetContextValue | undefined>(undefined)
@@ -95,7 +100,6 @@ export function useWidget() {
   return context
 }
 
-// --- Root ---
 export interface WidgetRootProps {
   children: ReactNode
   defaultOpen?: boolean
@@ -108,6 +112,10 @@ export interface WidgetRootProps {
   preventCloseOnOutsideClick?: boolean
   showOnlineStatus?: boolean
   className?: string
+  config?: Config
+  configDir?: string
+  initialData?: LoaderResult
+  isDev?: boolean
 }
 
 export function Root({
@@ -121,10 +129,16 @@ export function Root({
   themeVariables,
   preventCloseOnOutsideClick,
   showOnlineStatus = true,
-  className
+  className,
+  config,
+  configDir,
+  initialData,
+  isDev
 }: WidgetRootProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const [isMaximized, setIsMaximized] = useState(false)
+
+  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, isDev })
 
   const mergedTexts = useMemo(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts])
   const mergedIcons = useMemo(() => ({ ...defaultIcons, ...icons }), [icons])
@@ -145,7 +159,10 @@ export function Root({
         texts: mergedTexts,
         icons: mergedIcons,
         preventCloseOnOutsideClick,
-        showOnlineStatus
+        showOnlineStatus,
+        messages,
+        isLoading,
+        sendMessage: ask
       }}
     >
       <div
@@ -205,9 +222,33 @@ export function Content({ children, className }: WidgetContentProps) {
     theme,
     themeVariables,
     preventCloseOnOutsideClick,
-    showOnlineStatus
+    showOnlineStatus,
+    messages,
+    isLoading,
+    sendMessage
   } = useWidget()
   const themeClass = colorTheme === 'default' ? '' : `theme-${colorTheme}`
+  const [inputValue, setInputValue] = useState('')
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages, isLoading])
+
+  const handleSend = async () => {
+    if (!inputValue.trim() || isLoading) return
+    const text = inputValue
+    setInputValue('')
+    await sendMessage(text)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSend()
+    }
+  }
 
   return (
     <Popover.Portal>
@@ -277,11 +318,14 @@ export function Content({ children, className }: WidgetContentProps) {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 bg-gradient-to-b from-background to-muted/20">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 bg-gradient-to-b from-background to-muted/20"
+        >
           {children ?? (
-            <div className="flex flex-col h-full">
-              <div className="flex-1 space-y-6">
-                {/* Bot Greeting Bubble */}
+            <div className="flex flex-col gap-6">
+              {/* Bot Greeting Bubble (only if no messages) */}
+              {messages.length === 0 && (
                 <div className="flex items-start gap-3 max-w-[85%]">
                   <div className="flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     <Bot className="h-4 w-4" />
@@ -290,10 +334,60 @@ export function Content({ children, className }: WidgetContentProps) {
                     <div className="bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
                       <p className="text-sm leading-relaxed text-foreground">{texts.greeting}</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground ml-1">Just now</span>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Chat Messages */}
+              {messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'flex items-start gap-3 max-w-[85%]',
+                    msg.role === 'user' ? 'flex-row-reverse self-end ml-auto' : ''
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'flex-shrink-0 h-8 w-8 mt-1 rounded-full flex items-center justify-center',
+                      msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+                    )}
+                  >
+                    {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                  </div>
+                  <div className={cn('flex flex-col gap-1', msg.role === 'user' ? 'items-end' : '')}>
+                    <div
+                      className={cn(
+                        'border border-border/50 px-4 py-3 rounded-2xl shadow-sm',
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                          : 'bg-muted rounded-tl-sm'
+                      )}
+                    >
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground ml-1">
+                      {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {/* Loading Indicator */}
+              {isLoading && (
+                <div className="flex items-start gap-3 max-w-[85%] animate-pulse">
+                  <div className="flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <Bot className="h-4 w-4" />
+                  </div>
+                  <div className="bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm">
+                    <div className="flex gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:0.2s]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:0.4s]" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -304,12 +398,18 @@ export function Content({ children, className }: WidgetContentProps) {
             <div className="relative group flex items-center">
               <input
                 type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder={texts.placeholder}
-                className="w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground"
+                disabled={isLoading}
+                className="w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground disabled:opacity-50"
               />
               <button
                 type="button"
-                className="absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+                onClick={handleSend}
+                disabled={!inputValue.trim() || isLoading}
+                className="absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:scale-100"
               >
                 {icons.submit}
               </button>

@@ -443,11 +443,20 @@ export default function App() {
         themeVariables={themeVariables}
         showOnlineStatus={showOnlineStatus}
         preventCloseOnOutsideClick={true}
+        configDir="../agent"
+        config={{
+          AI_PROVIDER: 'gemini',
+          AI_MODEL: 'gemini-2.5-flash',
+          GEMINI_API_KEY: 'AIzaSyBO7ySSsHYxcHPzLBCNF9VZDbTR4I4plh0', // Placeholder for testing
+          DEFAULT_LANGUAGE: 'pt',
+          AI_TONE: 'professional and helpful'
+        }}
         texts={{
           ...(customTitle ? { title: customTitle } : {}),
           ...(customGreeting ? { greeting: customGreeting } : {}),
           ...(customSupportText ? { supportText: customSupportText } : {})
         }}
+        isDev={false}
       >
         <Widget.Trigger />
         <Widget.Content />

@@ -1,9 +1,96 @@
 // src/components/organisms/Widget/Widget.tsx
 import * as Popover from "@radix-ui/react-popover";
 import { clsx } from "clsx";
-import { Bot, Maximize2, MessageSquare, Minimize2, Send, X } from "lucide-react";
-import { createContext, useContext, useMemo, useState } from "react";
+import { Bot, Maximize2, MessageSquare, Minimize2, Send, User, X } from "lucide-react";
+import { createContext, useContext, useEffect as useEffect2, useMemo, useRef as useRef2, useState as useState2 } from "react";
 import { twMerge } from "tailwind-merge";
+
+// src/hooks/use-knowledge.ts
+import { KnowledgeRouter } from "@openknowledge/core";
+import { useCallback, useEffect, useRef, useState } from "react";
+function useKnowledge(options = {}) {
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const routerRef = useRef(null);
+  const isDev = options?.isDev || false;
+  useEffect(() => {
+    if (isDev) return;
+    if (options.config && options.initialData) {
+      routerRef.current = new KnowledgeRouter({
+        config: options.config,
+        ...options.initialData
+      });
+      return;
+    }
+    if (options.config && options.configDir) {
+      const isNode = typeof process !== "undefined" && process.versions?.node;
+      if (!isNode) {
+        console.warn(
+          "KnowledgeRouter.fromDir() is only supported in Node.js environments. Please provide initialData for browser use."
+        );
+        return;
+      }
+      KnowledgeRouter.fromDir(options.config, options.configDir).then((router) => {
+        routerRef.current = router;
+      }).catch((err) => {
+        console.error("Failed to initialize KnowledgeRouter from directory:", err);
+      });
+    } else if (!options.config && !isDev) {
+      console.error("No configuration provided for KnowledgeRouter in non-dev mode.");
+    }
+  }, [options.config, options.configDir, options.initialData, isDev]);
+  const ask = useCallback(
+    async (question) => {
+      if (!question.trim()) return;
+      const userMessage = {
+        role: "user",
+        content: question,
+        timestamp: /* @__PURE__ */ new Date()
+      };
+      setMessages((prev) => [...prev, userMessage]);
+      setIsLoading(true);
+      try {
+        let response;
+        if (isDev) {
+          await new Promise((resolve) => setTimeout(resolve, 1e3));
+          response = `This is a mocked response in development mode for your question: "${question}". Configure your API keys to see real AI responses.`;
+        } else if (routerRef.current) {
+          response = await routerRef.current.ask(question);
+        } else {
+          response = "Router not initialized. Please provide a valid configuration.";
+        }
+        const assistantMessage = {
+          role: "assistant",
+          content: response,
+          timestamp: /* @__PURE__ */ new Date()
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      } catch (error) {
+        console.error("Error in knowledge router:", error);
+        const errorMessage = {
+          role: "assistant",
+          content: "Sorry, I encountered an error while processing your request.",
+          timestamp: /* @__PURE__ */ new Date()
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isDev]
+  );
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+  }, []);
+  return {
+    messages,
+    isLoading,
+    ask,
+    clearMessages
+  };
+}
+
+// src/components/organisms/Widget/Widget.tsx
 import { jsx, jsxs } from "react/jsx-runtime";
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -63,10 +150,15 @@ function Root2({
   themeVariables,
   preventCloseOnOutsideClick,
   showOnlineStatus = true,
-  className
+  className,
+  config,
+  configDir,
+  initialData,
+  isDev
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [isMaximized, setIsMaximized] = useState(false);
+  const [isOpen, setIsOpen] = useState2(defaultOpen);
+  const [isMaximized, setIsMaximized] = useState2(false);
+  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, isDev });
   const mergedTexts = useMemo(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts]);
   const mergedIcons = useMemo(() => ({ ...defaultIcons, ...icons }), [icons]);
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
@@ -85,7 +177,10 @@ function Root2({
         texts: mergedTexts,
         icons: mergedIcons,
         preventCloseOnOutsideClick,
-        showOnlineStatus
+        showOnlineStatus,
+        messages,
+        isLoading,
+        sendMessage: ask
       },
       children: /* @__PURE__ */ jsx(
         "div",
@@ -127,9 +222,30 @@ function Content2({ children, className }) {
     theme,
     themeVariables,
     preventCloseOnOutsideClick,
-    showOnlineStatus
+    showOnlineStatus,
+    messages,
+    isLoading,
+    sendMessage
   } = useWidget();
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
+  const [inputValue, setInputValue] = useState2("");
+  const scrollRef = useRef2(null);
+  useEffect2(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
+  const handleSend = async () => {
+    if (!inputValue.trim() || isLoading) return;
+    const text = inputValue;
+    setInputValue("");
+    await sendMessage(text);
+  };
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSend();
+    }
+  };
   return /* @__PURE__ */ jsx(Popover.Portal, { children: /* @__PURE__ */ jsxs(
     Popover.Content,
     {
@@ -191,28 +307,83 @@ function Content2({ children, className }) {
             )
           ] })
         ] }),
-        /* @__PURE__ */ jsx("div", { className: "flex-1 overflow-y-auto p-5 flex flex-col gap-6 bg-gradient-to-b from-background to-muted/20", children: children ?? /* @__PURE__ */ jsx("div", { className: "flex flex-col h-full", children: /* @__PURE__ */ jsx("div", { className: "flex-1 space-y-6", children: /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-3 max-w-[85%]", children: [
-          /* @__PURE__ */ jsx("div", { className: "flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary", children: /* @__PURE__ */ jsx(Bot, { className: "h-4 w-4" }) }),
-          /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-1", children: [
-            /* @__PURE__ */ jsx("div", { className: "bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm", children: /* @__PURE__ */ jsx("p", { className: "text-sm leading-relaxed text-foreground", children: texts.greeting }) }),
-            /* @__PURE__ */ jsx("span", { className: "text-[10px] text-muted-foreground ml-1", children: "Just now" })
-          ] })
-        ] }) }) }) }),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            ref: scrollRef,
+            className: "flex-1 overflow-y-auto p-5 flex flex-col gap-6 bg-gradient-to-b from-background to-muted/20",
+            children: children ?? /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-6", children: [
+              messages.length === 0 && /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-3 max-w-[85%]", children: [
+                /* @__PURE__ */ jsx("div", { className: "flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary", children: /* @__PURE__ */ jsx(Bot, { className: "h-4 w-4" }) }),
+                /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-1", children: /* @__PURE__ */ jsx("div", { className: "bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm", children: /* @__PURE__ */ jsx("p", { className: "text-sm leading-relaxed text-foreground", children: texts.greeting }) }) })
+              ] }),
+              messages.map((msg, i) => /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: cn(
+                    "flex items-start gap-3 max-w-[85%]",
+                    msg.role === "user" ? "flex-row-reverse self-end ml-auto" : ""
+                  ),
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      "div",
+                      {
+                        className: cn(
+                          "flex-shrink-0 h-8 w-8 mt-1 rounded-full flex items-center justify-center",
+                          msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                        ),
+                        children: msg.role === "user" ? /* @__PURE__ */ jsx(User, { className: "h-4 w-4" }) : /* @__PURE__ */ jsx(Bot, { className: "h-4 w-4" })
+                      }
+                    ),
+                    /* @__PURE__ */ jsxs("div", { className: cn("flex flex-col gap-1", msg.role === "user" ? "items-end" : ""), children: [
+                      /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          className: cn(
+                            "border border-border/50 px-4 py-3 rounded-2xl shadow-sm",
+                            msg.role === "user" ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-muted rounded-tl-sm"
+                          ),
+                          children: /* @__PURE__ */ jsx("p", { className: "text-sm leading-relaxed whitespace-pre-wrap", children: msg.content })
+                        }
+                      ),
+                      /* @__PURE__ */ jsx("span", { className: "text-[10px] text-muted-foreground ml-1", children: msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })
+                    ] })
+                  ]
+                },
+                i
+              )),
+              isLoading && /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-3 max-w-[85%] animate-pulse", children: [
+                /* @__PURE__ */ jsx("div", { className: "flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary", children: /* @__PURE__ */ jsx(Bot, { className: "h-4 w-4" }) }),
+                /* @__PURE__ */ jsx("div", { className: "bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm", children: /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
+                  /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce" }),
+                  /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:0.2s]" }),
+                  /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:0.4s]" })
+                ] }) })
+              ] })
+            ] })
+          }
+        ),
         /* @__PURE__ */ jsxs("div", { className: "p-4 bg-background border-t border-border/50", children: [
           !children && /* @__PURE__ */ jsxs("div", { className: "relative group flex items-center", children: [
             /* @__PURE__ */ jsx(
               "input",
               {
                 type: "text",
+                value: inputValue,
+                onChange: (e) => setInputValue(e.target.value),
+                onKeyDown: handleKeyDown,
                 placeholder: texts.placeholder,
-                className: "w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground"
+                disabled: isLoading,
+                className: "w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground disabled:opacity-50"
               }
             ),
             /* @__PURE__ */ jsx(
               "button",
               {
                 type: "button",
-                className: "absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring",
+                onClick: handleSend,
+                disabled: !inputValue.trim() || isLoading,
+                className: "absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:scale-100",
                 children: icons.submit
               }
             )

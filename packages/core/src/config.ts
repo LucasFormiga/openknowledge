@@ -3,7 +3,10 @@ import { z } from 'zod'
 export const configSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
-  DEFAULT_LANGUAGE: z.enum(['pt-BR', 'en', 'es']).default('pt-BR'),
+  GEMINI_API_KEY: z.string().optional(),
+  AI_PROVIDER: z.enum(['openai', 'anthropic', 'gemini']).default('gemini'),
+  AI_MODEL: z.string().default('gemini-2.5-flash'),
+  DEFAULT_LANGUAGE: z.enum(['pt', 'en', 'es']).default('pt'),
   AI_TONE: z.string().default('professional and helpful')
 })
 

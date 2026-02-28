@@ -1,4 +1,5 @@
 import * as react_jsx_runtime from 'react/jsx-runtime';
+import { Config, LoaderResult } from '@openknowledge/core';
 import React, { ReactNode } from 'react';
 
 interface WidgetTexts {
@@ -31,8 +32,12 @@ interface WidgetRootProps {
     preventCloseOnOutsideClick?: boolean;
     showOnlineStatus?: boolean;
     className?: string;
+    config?: Config;
+    configDir?: string;
+    initialData?: LoaderResult;
+    isDev?: boolean;
 }
-declare function Root({ children, defaultOpen, theme, colorTheme, uiLanguage, texts, icons, themeVariables, preventCloseOnOutsideClick, showOnlineStatus, className }: WidgetRootProps): react_jsx_runtime.JSX.Element;
+declare function Root({ children, defaultOpen, theme, colorTheme, uiLanguage, texts, icons, themeVariables, preventCloseOnOutsideClick, showOnlineStatus, className, config, configDir, initialData, isDev }: WidgetRootProps): react_jsx_runtime.JSX.Element;
 interface WidgetTriggerProps {
     children?: ReactNode;
     className?: string;

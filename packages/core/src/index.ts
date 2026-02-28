@@ -1,3 +1,5 @@
 export * from './config.js'
+export * from './domain/types.js'
+export * from './infrastructure/file-loader.js'
 export * from './parser.js'
 export * from './router.js'

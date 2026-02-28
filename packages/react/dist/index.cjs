@@ -38,8 +38,95 @@ module.exports = __toCommonJS(index_exports);
 var Popover = __toESM(require("@radix-ui/react-popover"), 1);
 var import_clsx = require("clsx");
 var import_lucide_react = require("lucide-react");
-var import_react = require("react");
+var import_react2 = require("react");
 var import_tailwind_merge = require("tailwind-merge");
+
+// src/hooks/use-knowledge.ts
+var import_core = require("@openknowledge/core");
+var import_react = require("react");
+function useKnowledge(options = {}) {
+  const [messages, setMessages] = (0, import_react.useState)([]);
+  const [isLoading, setIsLoading] = (0, import_react.useState)(false);
+  const routerRef = (0, import_react.useRef)(null);
+  const isDev = options?.isDev || false;
+  (0, import_react.useEffect)(() => {
+    if (isDev) return;
+    if (options.config && options.initialData) {
+      routerRef.current = new import_core.KnowledgeRouter({
+        config: options.config,
+        ...options.initialData
+      });
+      return;
+    }
+    if (options.config && options.configDir) {
+      const isNode = typeof process !== "undefined" && process.versions?.node;
+      if (!isNode) {
+        console.warn(
+          "KnowledgeRouter.fromDir() is only supported in Node.js environments. Please provide initialData for browser use."
+        );
+        return;
+      }
+      import_core.KnowledgeRouter.fromDir(options.config, options.configDir).then((router) => {
+        routerRef.current = router;
+      }).catch((err) => {
+        console.error("Failed to initialize KnowledgeRouter from directory:", err);
+      });
+    } else if (!options.config && !isDev) {
+      console.error("No configuration provided for KnowledgeRouter in non-dev mode.");
+    }
+  }, [options.config, options.configDir, options.initialData, isDev]);
+  const ask = (0, import_react.useCallback)(
+    async (question) => {
+      if (!question.trim()) return;
+      const userMessage = {
+        role: "user",
+        content: question,
+        timestamp: /* @__PURE__ */ new Date()
+      };
+      setMessages((prev) => [...prev, userMessage]);
+      setIsLoading(true);
+      try {
+        let response;
+        if (isDev) {
+          await new Promise((resolve) => setTimeout(resolve, 1e3));
+          response = `This is a mocked response in development mode for your question: "${question}". Configure your API keys to see real AI responses.`;
+        } else if (routerRef.current) {
+          response = await routerRef.current.ask(question);
+        } else {
+          response = "Router not initialized. Please provide a valid configuration.";
+        }
+        const assistantMessage = {
+          role: "assistant",
+          content: response,
+          timestamp: /* @__PURE__ */ new Date()
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      } catch (error) {
+        console.error("Error in knowledge router:", error);
+        const errorMessage = {
+          role: "assistant",
+          content: "Sorry, I encountered an error while processing your request.",
+          timestamp: /* @__PURE__ */ new Date()
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isDev]
+  );
+  const clearMessages = (0, import_react.useCallback)(() => {
+    setMessages([]);
+  }, []);
+  return {
+    messages,
+    isLoading,
+    ask,
+    clearMessages
+  };
+}
+
+// src/components/organisms/Widget/Widget.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 function cn(...inputs) {
   return (0, import_tailwind_merge.twMerge)((0, import_clsx.clsx)(inputs));
@@ -80,9 +167,9 @@ var defaultIcons = {
   close: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.X, { className: "h-4 w-4" }),
   submit: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Send, { className: "w-4 h-4" })
 };
-var WidgetContext = (0, import_react.createContext)(void 0);
+var WidgetContext = (0, import_react2.createContext)(void 0);
 function useWidget() {
-  const context = (0, import_react.useContext)(WidgetContext);
+  const context = (0, import_react2.useContext)(WidgetContext);
   if (!context) {
     throw new Error("useWidget must be used within a Widget.Root");
   }
@@ -99,12 +186,17 @@ function Root2({
   themeVariables,
   preventCloseOnOutsideClick,
   showOnlineStatus = true,
-  className
+  className,
+  config,
+  configDir,
+  initialData,
+  isDev
 }) {
-  const [isOpen, setIsOpen] = (0, import_react.useState)(defaultOpen);
-  const [isMaximized, setIsMaximized] = (0, import_react.useState)(false);
-  const mergedTexts = (0, import_react.useMemo)(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts]);
-  const mergedIcons = (0, import_react.useMemo)(() => ({ ...defaultIcons, ...icons }), [icons]);
+  const [isOpen, setIsOpen] = (0, import_react2.useState)(defaultOpen);
+  const [isMaximized, setIsMaximized] = (0, import_react2.useState)(false);
+  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, isDev });
+  const mergedTexts = (0, import_react2.useMemo)(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts]);
+  const mergedIcons = (0, import_react2.useMemo)(() => ({ ...defaultIcons, ...icons }), [icons]);
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
     WidgetContext.Provider,
@@ -121,7 +213,10 @@ function Root2({
         texts: mergedTexts,
         icons: mergedIcons,
         preventCloseOnOutsideClick,
-        showOnlineStatus
+        showOnlineStatus,
+        messages,
+        isLoading,
+        sendMessage: ask
       },
       children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
         "div",
@@ -163,9 +258,30 @@ function Content2({ children, className }) {
     theme,
     themeVariables,
     preventCloseOnOutsideClick,
-    showOnlineStatus
+    showOnlineStatus,
+    messages,
+    isLoading,
+    sendMessage
   } = useWidget();
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
+  const [inputValue, setInputValue] = (0, import_react2.useState)("");
+  const scrollRef = (0, import_react2.useRef)(null);
+  (0, import_react2.useEffect)(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
+  const handleSend = async () => {
+    if (!inputValue.trim() || isLoading) return;
+    const text = inputValue;
+    setInputValue("");
+    await sendMessage(text);
+  };
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSend();
+    }
+  };
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Popover.Portal, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
     Popover.Content,
     {
@@ -227,28 +343,83 @@ function Content2({ children, className }) {
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex-1 overflow-y-auto p-5 flex flex-col gap-6 bg-gradient-to-b from-background to-muted/20", children: children ?? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex flex-col h-full", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex-1 space-y-6", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-start gap-3 max-w-[85%]", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Bot, { className: "h-4 w-4" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex flex-col gap-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-sm leading-relaxed text-foreground", children: texts.greeting }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[10px] text-muted-foreground ml-1", children: "Just now" })
-          ] })
-        ] }) }) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "div",
+          {
+            ref: scrollRef,
+            className: "flex-1 overflow-y-auto p-5 flex flex-col gap-6 bg-gradient-to-b from-background to-muted/20",
+            children: children ?? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex flex-col gap-6", children: [
+              messages.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-start gap-3 max-w-[85%]", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Bot, { className: "h-4 w-4" }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex flex-col gap-1", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-sm leading-relaxed text-foreground", children: texts.greeting }) }) })
+              ] }),
+              messages.map((msg, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                "div",
+                {
+                  className: cn(
+                    "flex items-start gap-3 max-w-[85%]",
+                    msg.role === "user" ? "flex-row-reverse self-end ml-auto" : ""
+                  ),
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "div",
+                      {
+                        className: cn(
+                          "flex-shrink-0 h-8 w-8 mt-1 rounded-full flex items-center justify-center",
+                          msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                        ),
+                        children: msg.role === "user" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.User, { className: "h-4 w-4" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Bot, { className: "h-4 w-4" })
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: cn("flex flex-col gap-1", msg.role === "user" ? "items-end" : ""), children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "div",
+                        {
+                          className: cn(
+                            "border border-border/50 px-4 py-3 rounded-2xl shadow-sm",
+                            msg.role === "user" ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-muted rounded-tl-sm"
+                          ),
+                          children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-sm leading-relaxed whitespace-pre-wrap", children: msg.content })
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[10px] text-muted-foreground ml-1", children: msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })
+                    ] })
+                  ]
+                },
+                i
+              )),
+              isLoading && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-start gap-3 max-w-[85%] animate-pulse", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Bot, { className: "h-4 w-4" }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex gap-1", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:0.2s]" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:0.4s]" })
+                ] }) })
+              ] })
+            ] })
+          }
+        ),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-4 bg-background border-t border-border/50", children: [
           !children && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative group flex items-center", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               "input",
               {
                 type: "text",
+                value: inputValue,
+                onChange: (e) => setInputValue(e.target.value),
+                onKeyDown: handleKeyDown,
                 placeholder: texts.placeholder,
-                className: "w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground"
+                disabled: isLoading,
+                className: "w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground disabled:opacity-50"
               }
             ),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               "button",
               {
                 type: "button",
-                className: "absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring",
+                onClick: handleSend,
+                disabled: !inputValue.trim() || isLoading,
+                className: "absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:scale-100",
                 children: icons.submit
               }
             )
