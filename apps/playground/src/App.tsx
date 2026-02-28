@@ -145,6 +145,11 @@ export default function App() {
     }
   }
 
+  const files = import.meta.glob('./agent/**/*.md', { eager: true, query: '?raw', import: 'default' }) as Record<
+    string,
+    string
+  >
+
   return (
     <div
       className={`min-h-screen flex transition-colors duration-300 ${theme === 'dark' ? 'dark bg-zinc-950 text-zinc-50' : 'bg-slate-50 text-zinc-950'}`}
@@ -443,7 +448,7 @@ export default function App() {
         themeVariables={themeVariables}
         showOnlineStatus={showOnlineStatus}
         preventCloseOnOutsideClick={true}
-        configDir="../agent"
+        initialFiles={files}
         config={{
           AI_PROVIDER: 'gemini',
           AI_MODEL: 'gemini-2.5-flash',

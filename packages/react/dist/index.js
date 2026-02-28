@@ -22,6 +22,10 @@ function useKnowledge(options = {}) {
       });
       return;
     }
+    if (options.config && options.initialFiles) {
+      routerRef.current = KnowledgeRouter.fromStatic(options.config, options.initialFiles);
+      return;
+    }
     if (options.config && options.configDir) {
       const isNode = typeof process !== "undefined" && process.versions?.node;
       if (!isNode) {
@@ -38,7 +42,7 @@ function useKnowledge(options = {}) {
     } else if (!options.config && !isDev) {
       console.error("No configuration provided for KnowledgeRouter in non-dev mode.");
     }
-  }, [options.config, options.configDir, options.initialData, isDev]);
+  }, [options.config, options.configDir, options.initialData, options.initialFiles, isDev]);
   const ask = useCallback(
     async (question) => {
       if (!question.trim()) return;
@@ -50,28 +54,38 @@ function useKnowledge(options = {}) {
       setMessages((prev) => [...prev, userMessage]);
       setIsLoading(true);
       try {
-        let response;
-        if (isDev) {
-          await new Promise((resolve) => setTimeout(resolve, 1e3));
-          response = `This is a mocked response in development mode for your question: "${question}". Configure your API keys to see real AI responses.`;
-        } else if (routerRef.current) {
-          response = await routerRef.current.ask(question);
-        } else {
-          response = "Router not initialized. Please provide a valid configuration.";
-        }
         const assistantMessage = {
           role: "assistant",
-          content: response,
+          content: "Default Value",
           timestamp: /* @__PURE__ */ new Date()
         };
-        setMessages((prev) => [...prev, assistantMessage]);
+        if (isDev || !routerRef.current) {
+          console.log("Mocking response in development mode");
+          await new Promise((resolve) => setTimeout(resolve, 1e3));
+          return setMessages((prev) => [
+            ...prev,
+            {
+              ...assistantMessage,
+              content: `This is a mocked response in development mode for your question: "${question}". Configure your API keys to see real AI responses.`
+            }
+          ]);
+        }
+        const response = await routerRef?.current?.ask(question);
+        console.log("Resposta", response);
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...assistantMessage,
+            content: response || "No response received"
+          }
+        ]);
       } catch (error) {
-        console.error("Error in knowledge router:", error);
         const errorMessage = {
           role: "assistant",
           content: "Sorry, I encountered an error while processing your request.",
           timestamp: /* @__PURE__ */ new Date()
         };
+        console.error("Error in knowledge router:", error);
         setMessages((prev) => [...prev, errorMessage]);
       } finally {
         setIsLoading(false);
@@ -154,11 +168,12 @@ function Root2({
   config,
   configDir,
   initialData,
+  initialFiles,
   isDev
 }) {
   const [isOpen, setIsOpen] = useState2(defaultOpen);
   const [isMaximized, setIsMaximized] = useState2(false);
-  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, isDev });
+  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, initialFiles, isDev });
   const mergedTexts = useMemo(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts]);
   const mergedIcons = useMemo(() => ({ ...defaultIcons, ...icons }), [icons]);
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;

@@ -1,14 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import type { AgentIdentity, KnowledgeBase, SecurityGuard, SkillInfo } from '../domain/types.js'
+import type { KnowledgeBase, LoaderResult, SkillInfo } from '../domain/types.js'
 import { parseIdentityMarkdown, parseKnowledgeMarkdown, parseSecurityMarkdown, parseSkillMarkdown } from '../parser.js'
-
-export interface LoaderResult {
-  identity?: AgentIdentity
-  security?: SecurityGuard
-  knowledge?: KnowledgeBase
-  skills?: SkillInfo[]
-}
 
 export class FileSystemKnowledgeLoader {
   async loadFromDir(baseDir: string): Promise<LoaderResult> {

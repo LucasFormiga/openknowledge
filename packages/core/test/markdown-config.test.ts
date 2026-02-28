@@ -79,4 +79,22 @@ describe('KnowledgeRouter Prompt Assembly', () => {
     expect(prompt).toContain('# LOCAL KNOWLEDGE BASE')
     expect(prompt).toContain('## The Joke')
   })
+
+  it('should initialize from static record using fromStatic', () => {
+    const files = {
+      'behavior.md': '# Static Agent\n## Tone\nStatic Tone\n## Instructions\nStatic Instructions',
+      'security.md': '# Security\n## Strict Rules\nStatic Rules',
+      'knowledge/item1.md': '# Item 1\nContent 1',
+      'skills/skill1.md': '# Skill 1\n## Instructions\nSkill Instructions'
+    }
+
+    const router = KnowledgeRouter.fromStatic(config, files)
+    const prompt = router.getSystemPrompt()
+
+    expect(prompt).toContain('Name: Static Agent')
+    expect(prompt).toContain('Tone: Static Tone')
+    expect(prompt).toContain('Static Rules')
+    expect(prompt).toContain('## Item 1')
+    expect(prompt).toContain('## Skill 1')
+  })
 })

@@ -115,6 +115,7 @@ export interface WidgetRootProps {
   config?: Config
   configDir?: string
   initialData?: LoaderResult
+  initialFiles?: Record<string, string>
   isDev?: boolean
 }
 
@@ -133,12 +134,13 @@ export function Root({
   config,
   configDir,
   initialData,
+  initialFiles,
   isDev
 }: WidgetRootProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const [isMaximized, setIsMaximized] = useState(false)
 
-  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, isDev })
+  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, initialFiles, isDev })
 
   const mergedTexts = useMemo(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts])
   const mergedIcons = useMemo(() => ({ ...defaultIcons, ...icons }), [icons])

@@ -27,3 +27,10 @@ export interface SkillInfo {
   instructions: string
   resources: string[]
 }
+
+export interface LoaderResult {
+  identity?: AgentIdentity
+  security?: SecurityGuard
+  knowledge?: KnowledgeBase
+  skills?: SkillInfo[]
+}

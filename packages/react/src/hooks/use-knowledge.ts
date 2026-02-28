@@ -11,6 +11,7 @@ export interface UseKnowledgeOptions {
   config?: Config
   configDir?: string
   initialData?: LoaderResult
+  initialFiles?: Record<string, string>
   isDev?: boolean
 }
 
@@ -30,6 +31,12 @@ export function useKnowledge(options: UseKnowledgeOptions = {}) {
         config: options.config,
         ...options.initialData
       })
+      return
+    }
+
+    // If initial files are provided, use them to initialize router
+    if (options.config && options.initialFiles) {
+      routerRef.current = KnowledgeRouter.fromStatic(options.config, options.initialFiles)
       return
     }
 
@@ -54,7 +61,7 @@ export function useKnowledge(options: UseKnowledgeOptions = {}) {
     } else if (!options.config && !isDev) {
       console.error('No configuration provided for KnowledgeRouter in non-dev mode.')
     }
-  }, [options.config, options.configDir, options.initialData, isDev])
+  }, [options.config, options.configDir, options.initialData, options.initialFiles, isDev])
 
   const ask = useCallback(
     async (question: string) => {
@@ -70,32 +77,44 @@ export function useKnowledge(options: UseKnowledgeOptions = {}) {
       setIsLoading(true)
 
       try {
-        let response: string
-
-        if (isDev) {
-          // Mock response for development
-          await new Promise((resolve) => setTimeout(resolve, 1000))
-          response = `This is a mocked response in development mode for your question: "${question}". Configure your API keys to see real AI responses.`
-        } else if (routerRef.current) {
-          response = await routerRef.current.ask(question)
-        } else {
-          response = 'Router not initialized. Please provide a valid configuration.'
-        }
-
         const assistantMessage: Message = {
           role: 'assistant',
-          content: response,
+          content: 'Default Value',
           timestamp: new Date()
         }
 
-        setMessages((prev) => [...prev, assistantMessage])
+        if (isDev || !routerRef.current) {
+          console.log('Mocking response in development mode')
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+
+          return setMessages((prev) => [
+            ...prev,
+            {
+              ...assistantMessage,
+              content: `This is a mocked response in development mode for your question: "${question}". Configure your API keys to see real AI responses.`
+            }
+          ])
+        }
+
+        const response = await routerRef?.current?.ask(question)
+
+        console.log('Resposta', response)
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...assistantMessage,
+            content: response || 'No response received'
+          }
+        ])
       } catch (error) {
-        console.error('Error in knowledge router:', error)
         const errorMessage: Message = {
           role: 'assistant',
           content: 'Sorry, I encountered an error while processing your request.',
           timestamp: new Date()
         }
+
+        console.error('Error in knowledge router:', error)
         setMessages((prev) => [...prev, errorMessage])
       } finally {
         setIsLoading(false)

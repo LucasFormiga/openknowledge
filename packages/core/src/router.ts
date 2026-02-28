@@ -1,10 +1,11 @@
 import { chat } from '@tanstack/ai'
-import { anthropicText } from '@tanstack/ai-anthropic'
-import { geminiText } from '@tanstack/ai-gemini'
-import { openaiText } from '@tanstack/ai-openai'
+import { createAnthropicChat } from '@tanstack/ai-anthropic'
+import { createGeminiChat } from '@tanstack/ai-gemini'
+import { createOpenaiChat } from '@tanstack/ai-openai'
 import type { Config } from './config.js'
 import type { AgentIdentity, KnowledgeBase, SecurityGuard, SkillInfo } from './domain/types.js'
 import { FileSystemKnowledgeLoader } from './infrastructure/file-loader.js'
+import { StaticKnowledgeLoader } from './infrastructure/static-loader.js'
 
 export interface RouterOptions {
   config: Config
@@ -41,6 +42,19 @@ export class KnowledgeRouter {
     })
   }
 
+  static fromStatic(config: Config, files: Record<string, string>): KnowledgeRouter {
+    const loader = new StaticKnowledgeLoader()
+    const { identity, security, knowledge, skills } = loader.loadFromRecord(files)
+    console.log('Identity', identity)
+    return new KnowledgeRouter({
+      config,
+      identity,
+      security,
+      knowledge,
+      skills
+    })
+  }
+
   getSystemPrompt(): string {
     const languageMap: Record<string, string> = {
       'pt-BR': 'Responda sempre em Português do Brasil.',
@@ -50,7 +64,7 @@ export class KnowledgeRouter {
     }
 
     const lang = this.identity?.language || this.config.DEFAULT_LANGUAGE
-    const languageInstruction = languageMap[lang] || languageMap['en']
+    const languageInstruction = languageMap[lang] || languageMap.en
     const tone = this.identity?.tone || this.config.AI_TONE
 
     let prompt = `# IDENTITY\n`
@@ -96,15 +110,16 @@ export class KnowledgeRouter {
   }
 
   private getAdapter() {
-    const { AI_PROVIDER, AI_MODEL } = this.config
+    const { AI_PROVIDER, AI_MODEL, GEMINI_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY } = this.config
+    console.log('Config', this.config)
 
     switch (AI_PROVIDER) {
       case 'openai':
-        return openaiText(AI_MODEL as any)
+        return createOpenaiChat(AI_MODEL as any, OPENAI_API_KEY as string)
       case 'anthropic':
-        return anthropicText(AI_MODEL as any)
+        return createAnthropicChat(AI_MODEL as any, ANTHROPIC_API_KEY as string)
       case 'gemini':
-        return geminiText(AI_MODEL as any)
+        return createGeminiChat(AI_MODEL as any, GEMINI_API_KEY as string)
       default:
         throw new Error(`Unsupported AI provider: ${AI_PROVIDER}`)
     }
@@ -117,7 +132,7 @@ export class KnowledgeRouter {
     const result = await chat({
       adapter,
       messages: [
-        { role: 'user', content: prompt },
+        { role: 'assistant', content: prompt },
         { role: 'user', content: question }
       ],
       stream: false

@@ -32,6 +32,7 @@ var index_exports = {};
 __export(index_exports, {
   FileSystemKnowledgeLoader: () => FileSystemKnowledgeLoader,
   KnowledgeRouter: () => KnowledgeRouter,
+  StaticKnowledgeLoader: () => StaticKnowledgeLoader,
   configSchema: () => configSchema,
   extractMarkdownSections: () => extractMarkdownSections,
   parseEnv: () => parseEnv,
@@ -179,6 +180,36 @@ var FileSystemKnowledgeLoader = class {
   }
 };
 
+// src/infrastructure/static-loader.ts
+var StaticKnowledgeLoader = class {
+  loadFromRecord(files) {
+    const result = {};
+    const knowledgeSources = [];
+    const skills = [];
+    for (const [path2, content] of Object.entries(files)) {
+      const parts = path2.split("/");
+      const fileName = parts[parts.length - 1];
+      if (fileName === "behavior.md") {
+        result.identity = parseIdentityMarkdown(content);
+      } else if (fileName === "security.md") {
+        result.security = parseSecurityMarkdown(content);
+      } else if (parts.includes("knowledge") && fileName.endsWith(".md")) {
+        const id = fileName.replace(".md", "");
+        knowledgeSources.push(parseKnowledgeMarkdown(id, content));
+      } else if (parts.includes("skills") && fileName.endsWith(".md")) {
+        skills.push(parseSkillMarkdown(content));
+      }
+    }
+    if (knowledgeSources.length > 0) {
+      result.knowledge = { sources: knowledgeSources };
+    }
+    if (skills.length > 0) {
+      result.skills = skills;
+    }
+    return result;
+  }
+};
+
 // src/router.ts
 var import_ai = require("@tanstack/ai");
 var import_ai_anthropic = require("@tanstack/ai-anthropic");
@@ -208,6 +239,18 @@ var KnowledgeRouter = class _KnowledgeRouter {
       skills
     });
   }
+  static fromStatic(config, files) {
+    const loader = new StaticKnowledgeLoader();
+    const { identity, security, knowledge, skills } = loader.loadFromRecord(files);
+    console.log("Identity", identity);
+    return new _KnowledgeRouter({
+      config,
+      identity,
+      security,
+      knowledge,
+      skills
+    });
+  }
   getSystemPrompt() {
     const languageMap = {
       "pt-BR": "Responda sempre em Portugu\xEAs do Brasil.",
@@ -216,7 +259,7 @@ var KnowledgeRouter = class _KnowledgeRouter {
       es: "Responde siempre en Espa\xF1ol."
     };
     const lang = this.identity?.language || this.config.DEFAULT_LANGUAGE;
-    const languageInstruction = languageMap[lang] || languageMap["en"];
+    const languageInstruction = languageMap[lang] || languageMap.en;
     const tone = this.identity?.tone || this.config.AI_TONE;
     let prompt = `# IDENTITY
 `;
@@ -282,14 +325,15 @@ ${skill.instructions}
     return prompt;
   }
   getAdapter() {
-    const { AI_PROVIDER, AI_MODEL } = this.config;
+    const { AI_PROVIDER, AI_MODEL, GEMINI_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY } = this.config;
+    console.log("Config", this.config);
     switch (AI_PROVIDER) {
       case "openai":
-        return (0, import_ai_openai.openaiText)(AI_MODEL);
+        return (0, import_ai_openai.createOpenaiChat)(AI_MODEL, OPENAI_API_KEY);
       case "anthropic":
-        return (0, import_ai_anthropic.anthropicText)(AI_MODEL);
+        return (0, import_ai_anthropic.createAnthropicChat)(AI_MODEL, ANTHROPIC_API_KEY);
       case "gemini":
-        return (0, import_ai_gemini.geminiText)(AI_MODEL);
+        return (0, import_ai_gemini.createGeminiChat)(AI_MODEL, GEMINI_API_KEY);
       default:
         throw new Error(`Unsupported AI provider: ${AI_PROVIDER}`);
     }
@@ -300,7 +344,7 @@ ${skill.instructions}
     const result = await (0, import_ai.chat)({
       adapter,
       messages: [
-        { role: "user", content: prompt },
+        { role: "assistant", content: prompt },
         { role: "user", content: question }
       ],
       stream: false
@@ -312,6 +356,7 @@ ${skill.instructions}
 0 && (module.exports = {
   FileSystemKnowledgeLoader,
   KnowledgeRouter,
+  StaticKnowledgeLoader,
   configSchema,
   extractMarkdownSections,
   parseEnv,

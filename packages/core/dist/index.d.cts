@@ -45,17 +45,21 @@ interface SkillInfo {
     instructions: string;
     resources: string[];
 }
-
 interface LoaderResult {
     identity?: AgentIdentity;
     security?: SecurityGuard;
     knowledge?: KnowledgeBase;
     skills?: SkillInfo[];
 }
+
 declare class FileSystemKnowledgeLoader {
     loadFromDir(baseDir: string): Promise<LoaderResult>;
     private loadKnowledge;
     private loadSkills;
+}
+
+declare class StaticKnowledgeLoader {
+    loadFromRecord(files: Record<string, string>): LoaderResult;
 }
 
 /**
@@ -86,9 +90,10 @@ declare class KnowledgeRouter {
     private skills;
     constructor(options: RouterOptions);
     static fromDir(config: Config, dirPath: string): Promise<KnowledgeRouter>;
+    static fromStatic(config: Config, files: Record<string, string>): KnowledgeRouter;
     getSystemPrompt(): string;
     private getAdapter;
     ask(question: string): Promise<string>;
 }
 
-export { type AgentIdentity, type Config, FileSystemKnowledgeLoader, type KnowledgeBase, type KnowledgeItem, KnowledgeRouter, type LoaderResult, type RouterOptions, type SecurityGuard, type SkillInfo, configSchema, extractMarkdownSections, parseEnv, parseIdentityMarkdown, parseKnowledgeMarkdown, parseSecurityMarkdown, parseSkillMarkdown };
+export { type AgentIdentity, type Config, FileSystemKnowledgeLoader, type KnowledgeBase, type KnowledgeItem, KnowledgeRouter, type LoaderResult, type RouterOptions, type SecurityGuard, type SkillInfo, StaticKnowledgeLoader, configSchema, extractMarkdownSections, parseEnv, parseIdentityMarkdown, parseKnowledgeMarkdown, parseSecurityMarkdown, parseSkillMarkdown };

@@ -35,9 +35,10 @@ interface WidgetRootProps {
     config?: Config;
     configDir?: string;
     initialData?: LoaderResult;
+    initialFiles?: Record<string, string>;
     isDev?: boolean;
 }
-declare function Root({ children, defaultOpen, theme, colorTheme, uiLanguage, texts, icons, themeVariables, preventCloseOnOutsideClick, showOnlineStatus, className, config, configDir, initialData, isDev }: WidgetRootProps): react_jsx_runtime.JSX.Element;
+declare function Root({ children, defaultOpen, theme, colorTheme, uiLanguage, texts, icons, themeVariables, preventCloseOnOutsideClick, showOnlineStatus, className, config, configDir, initialData, initialFiles, isDev }: WidgetRootProps): react_jsx_runtime.JSX.Element;
 interface WidgetTriggerProps {
     children?: ReactNode;
     className?: string;
