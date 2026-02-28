@@ -1,8 +1,8 @@
 export interface SkillInfo {
-  name: string;
-  description: string;
-  instructions: string;
-  resources: string[];
+  name: string
+  description: string
+  instructions: string
+  resources: string[]
 }
 
 /**
@@ -10,22 +10,22 @@ export interface SkillInfo {
  * Expects a title starting with # and content.
  */
 export function parseSkillMarkdown(content: string): SkillInfo {
-  const lines = content.split('\n');
-  let name = 'Unknown Skill';
-  const description = '';
-  let instructions = '';
-  const resources: string[] = [];
+  const lines = content.split('\n')
+  let name = 'Unknown Skill'
+  const description = ''
+  let instructions = ''
+  const resources: string[] = []
 
-  let currentSection = '';
+  let currentSection = ''
 
   for (const line of lines) {
     if (line.startsWith('# ')) {
-      name = line.replace('# ', '').trim();
+      name = line.replace('# ', '').trim()
     } else if (line.startsWith('## Instructions') || line.startsWith('## ')) {
-      currentSection = line.replace('## ', '').trim().toLowerCase();
+      currentSection = line.replace('## ', '').trim().toLowerCase()
     } else {
       if (currentSection === 'instructions' || (!currentSection && !name.startsWith('Unknown'))) {
-        instructions += `${line}\n`;
+        instructions += `${line}\n`
       }
     }
   }
@@ -37,6 +37,6 @@ export function parseSkillMarkdown(content: string): SkillInfo {
     name,
     description: description.trim(),
     instructions: instructions.trim(),
-    resources,
-  };
+    resources
+  }
 }

@@ -1,35 +1,35 @@
-import * as Popover from '@radix-ui/react-popover';
-import { type ClassValue, clsx } from 'clsx';
-import { Bot, Maximize2, MessageSquare, Minimize2, Send, X } from 'lucide-react';
-import type React from 'react';
-import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
+import * as Popover from '@radix-ui/react-popover'
+import { type ClassValue, clsx } from 'clsx'
+import { Bot, Maximize2, MessageSquare, Minimize2, Send, X } from 'lucide-react'
+import type React from 'react'
+import { createContext, type ReactNode, useContext, useMemo, useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 // --- Types ---
 export interface WidgetTexts {
-  title: string;
-  placeholder: string;
-  greeting: string;
-  minimize: string;
-  maximize: string;
-  close: string;
-  supportText?: string;
+  title: string
+  placeholder: string
+  greeting: string
+  minimize: string
+  maximize: string
+  close: string
+  supportText?: string
 }
 
 export interface WidgetIcons {
-  trigger: ReactNode;
-  minimize: ReactNode;
-  maximize: ReactNode;
-  close: ReactNode;
-  submit: ReactNode;
+  trigger: ReactNode
+  minimize: ReactNode
+  maximize: ReactNode
+  close: ReactNode
+  submit: ReactNode
 }
 
-export type UILanguage = 'pt-BR' | 'en' | 'es';
-export type ColorTheme = 'default' | 'rose' | 'emerald' | 'violet';
+export type UILanguage = 'pt-BR' | 'en' | 'es'
+export type ColorTheme = 'default' | 'rose' | 'emerald' | 'violet'
 
 const defaultTexts: Record<UILanguage, WidgetTexts> = {
   'pt-BR': {
@@ -39,7 +39,7 @@ const defaultTexts: Record<UILanguage, WidgetTexts> = {
     minimize: 'Minimizar',
     maximize: 'Maximizar',
     close: 'Fechar',
-    supportText: 'Powered by OpenKnowledge',
+    supportText: 'Powered by OpenKnowledge'
   },
   en: {
     title: 'OpenKnowledge',
@@ -48,7 +48,7 @@ const defaultTexts: Record<UILanguage, WidgetTexts> = {
     minimize: 'Minimize',
     maximize: 'Maximize',
     close: 'Close',
-    supportText: 'Powered by OpenKnowledge',
+    supportText: 'Powered by OpenKnowledge'
   },
   es: {
     title: 'OpenKnowledge',
@@ -57,57 +57,57 @@ const defaultTexts: Record<UILanguage, WidgetTexts> = {
     minimize: 'Minimizar',
     maximize: 'Maximizar',
     close: 'Cerrar',
-    supportText: 'Powered by OpenKnowledge',
-  },
-};
+    supportText: 'Powered by OpenKnowledge'
+  }
+}
 
 const defaultIcons: WidgetIcons = {
   trigger: <MessageSquare className="w-6 h-6" />,
   minimize: <Minimize2 className="h-4 w-4" />,
   maximize: <Maximize2 className="h-4 w-4" />,
   close: <X className="h-4 w-4" />,
-  submit: <Send className="w-4 h-4" />,
-};
+  submit: <Send className="w-4 h-4" />
+}
 
 // --- Context ---
 interface WidgetContextValue {
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  isMaximized: boolean;
-  setIsMaximized: React.Dispatch<React.SetStateAction<boolean>>;
-  theme: 'light' | 'dark';
-  colorTheme: ColorTheme;
-  themeVariables?: React.CSSProperties;
-  uiLanguage: UILanguage;
-  texts: WidgetTexts;
-  icons: WidgetIcons;
-  preventCloseOnOutsideClick?: boolean;
-  showOnlineStatus?: boolean;
+  isOpen: boolean
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+  isMaximized: boolean
+  setIsMaximized: React.Dispatch<React.SetStateAction<boolean>>
+  theme: 'light' | 'dark'
+  colorTheme: ColorTheme
+  themeVariables?: React.CSSProperties
+  uiLanguage: UILanguage
+  texts: WidgetTexts
+  icons: WidgetIcons
+  preventCloseOnOutsideClick?: boolean
+  showOnlineStatus?: boolean
 }
 
-const WidgetContext = createContext<WidgetContextValue | undefined>(undefined);
+const WidgetContext = createContext<WidgetContextValue | undefined>(undefined)
 
 export function useWidget() {
-  const context = useContext(WidgetContext);
+  const context = useContext(WidgetContext)
   if (!context) {
-    throw new Error('useWidget must be used within a Widget.Root');
+    throw new Error('useWidget must be used within a Widget.Root')
   }
-  return context;
+  return context
 }
 
 // --- Root ---
 export interface WidgetRootProps {
-  children: ReactNode;
-  defaultOpen?: boolean;
-  theme?: 'light' | 'dark';
-  colorTheme?: ColorTheme;
-  uiLanguage?: UILanguage;
-  texts?: Partial<WidgetTexts>;
-  icons?: Partial<WidgetIcons>;
-  themeVariables?: React.CSSProperties;
-  preventCloseOnOutsideClick?: boolean;
-  showOnlineStatus?: boolean;
-  className?: string;
+  children: ReactNode
+  defaultOpen?: boolean
+  theme?: 'light' | 'dark'
+  colorTheme?: ColorTheme
+  uiLanguage?: UILanguage
+  texts?: Partial<WidgetTexts>
+  icons?: Partial<WidgetIcons>
+  themeVariables?: React.CSSProperties
+  preventCloseOnOutsideClick?: boolean
+  showOnlineStatus?: boolean
+  className?: string
 }
 
 export function Root({
@@ -121,18 +121,15 @@ export function Root({
   themeVariables,
   preventCloseOnOutsideClick,
   showOnlineStatus = true,
-  className,
+  className
 }: WidgetRootProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [isMaximized, setIsMaximized] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [isMaximized, setIsMaximized] = useState(false)
 
-  const mergedTexts = useMemo(
-    () => ({ ...defaultTexts[uiLanguage], ...texts }),
-    [uiLanguage, texts],
-  );
-  const mergedIcons = useMemo(() => ({ ...defaultIcons, ...icons }), [icons]);
+  const mergedTexts = useMemo(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts])
+  const mergedIcons = useMemo(() => ({ ...defaultIcons, ...icons }), [icons])
 
-  const themeClass = colorTheme === 'default' ? '' : `theme-${colorTheme}`;
+  const themeClass = colorTheme === 'default' ? '' : `theme-${colorTheme}`
 
   return (
     <WidgetContext.Provider
@@ -148,16 +145,11 @@ export function Root({
         texts: mergedTexts,
         icons: mergedIcons,
         preventCloseOnOutsideClick,
-        showOnlineStatus,
+        showOnlineStatus
       }}
     >
       <div
-        className={cn(
-          'openknowledge-widget',
-          themeClass,
-          theme === 'dark' ? 'dark' : '',
-          className,
-        )}
+        className={cn('openknowledge-widget', themeClass, theme === 'dark' ? 'dark' : '', className)}
         style={themeVariables}
       >
         <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -165,17 +157,17 @@ export function Root({
         </Popover.Root>
       </div>
     </WidgetContext.Provider>
-  );
+  )
 }
 
 // --- Trigger ---
 export interface WidgetTriggerProps {
-  children?: ReactNode;
-  className?: string;
+  children?: ReactNode
+  className?: string
 }
 
 export function Trigger({ children, className }: WidgetTriggerProps) {
-  const { icons, isOpen } = useWidget();
+  const { icons, isOpen } = useWidget()
   return (
     <div className="fixed bottom-6 right-6 z-[9999]">
       <Popover.Trigger asChild>
@@ -184,22 +176,22 @@ export function Trigger({ children, className }: WidgetTriggerProps) {
           className={cn(
             'group relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-primary/30',
             isOpen && 'rotate-12 scale-95 shadow-md',
-            className,
+            className
           )}
         >
           {/* Subtle glow effect behind trigger */}
-          <div className="absolute inset-0 -z-10 rounded-full bg-primary opacity-20 blur-md transition-opacity group-hover:opacity-40"></div>
+          <div className="absolute inset-0 -z-10 rounded-full bg-primary opacity-20 blur-md transition-opacity group-hover:opacity-40" />
           {children ?? icons.trigger}
         </button>
       </Popover.Trigger>
     </div>
-  );
+  )
 }
 
 // --- Content ---
 export interface WidgetContentProps {
-  children?: ReactNode;
-  className?: string;
+  children?: ReactNode
+  className?: string
 }
 
 export function Content({ children, className }: WidgetContentProps) {
@@ -213,9 +205,9 @@ export function Content({ children, className }: WidgetContentProps) {
     theme,
     themeVariables,
     preventCloseOnOutsideClick,
-    showOnlineStatus,
-  } = useWidget();
-  const themeClass = colorTheme === 'default' ? '' : `theme-${colorTheme}`;
+    showOnlineStatus
+  } = useWidget()
+  const themeClass = colorTheme === 'default' ? '' : `theme-${colorTheme}`
 
   return (
     <Popover.Portal>
@@ -224,7 +216,7 @@ export function Content({ children, className }: WidgetContentProps) {
         sideOffset={20}
         onInteractOutside={(e: any) => {
           if (preventCloseOnOutsideClick) {
-            e.preventDefault();
+            e.preventDefault()
           }
         }}
         style={themeVariables}
@@ -238,7 +230,7 @@ export function Content({ children, className }: WidgetContentProps) {
             ? 'w-[400px] h-[650px] sm:w-[500px] sm:h-[750px]'
             : 'w-[340px] h-[520px] sm:w-[380px] sm:h-[600px]',
           'transition-[width,height] duration-300 ease-in-out',
-          className,
+          className
         )}
       >
         {/* Header */}
@@ -254,8 +246,8 @@ export function Content({ children, className }: WidgetContentProps) {
               {showOnlineStatus && (
                 <span className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                   </span>
                   Online
                 </span>
@@ -333,5 +325,5 @@ export function Content({ children, className }: WidgetContentProps) {
         </div>
       </Popover.Content>
     </Popover.Portal>
-  );
+  )
 }

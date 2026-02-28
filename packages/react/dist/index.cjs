@@ -103,10 +103,7 @@ function Root2({
 }) {
   const [isOpen, setIsOpen] = (0, import_react.useState)(defaultOpen);
   const [isMaximized, setIsMaximized] = (0, import_react.useState)(false);
-  const mergedTexts = (0, import_react.useMemo)(
-    () => ({ ...defaultTexts[uiLanguage], ...texts }),
-    [uiLanguage, texts]
-  );
+  const mergedTexts = (0, import_react.useMemo)(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts]);
   const mergedIcons = (0, import_react.useMemo)(() => ({ ...defaultIcons, ...icons }), [icons]);
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
@@ -129,12 +126,7 @@ function Root2({
       children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
         "div",
         {
-          className: cn(
-            "openknowledge-widget",
-            themeClass,
-            theme === "dark" ? "dark" : "",
-            className
-          ),
+          className: cn("openknowledge-widget", themeClass, theme === "dark" ? "dark" : "", className),
           style: themeVariables,
           children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Popover.Root, { open: isOpen, onOpenChange: setIsOpen, children })
         }

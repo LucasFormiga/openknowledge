@@ -1,4 +1,4 @@
-import { Widget } from '@openknowledge/react';
+import { Widget } from '@openknowledge/react'
 import {
   Check,
   Code2,
@@ -13,80 +13,78 @@ import {
   RotateCcw,
   Settings2,
   Sun,
-  Type,
-} from 'lucide-react';
-import type React from 'react';
-import { useState } from 'react';
+  Type
+} from 'lucide-react'
+import type React from 'react'
+import { useState } from 'react'
 
-type ColorTheme = 'default' | 'rose' | 'emerald' | 'violet';
-type Language = 'pt-BR' | 'en' | 'es';
+type ColorTheme = 'default' | 'rose' | 'emerald' | 'violet'
+type Language = 'pt-BR' | 'en' | 'es'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'controls' | 'code'>('controls');
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [colorTheme, setColorTheme] = useState<ColorTheme>('default');
-  const [language, setLanguage] = useState<Language>('pt-BR');
-  const [customPrimaryColor, setCustomPrimaryColor] = useState('');
-  const [showOnlineStatus, setShowOnlineStatus] = useState(true);
+  const [activeTab, setActiveTab] = useState<'controls' | 'code'>('controls')
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [colorTheme, setColorTheme] = useState<ColorTheme>('default')
+  const [language, setLanguage] = useState<Language>('pt-BR')
+  const [customPrimaryColor, setCustomPrimaryColor] = useState('')
+  const [showOnlineStatus, setShowOnlineStatus] = useState(true)
 
   // New Text Overrides
-  const [customTitle, setCustomTitle] = useState('');
-  const [customSupportText, setCustomSupportText] = useState('');
-  const [customGreeting, setCustomGreeting] = useState('');
+  const [customTitle, setCustomTitle] = useState('')
+  const [customSupportText, setCustomSupportText] = useState('')
+  const [customGreeting, setCustomGreeting] = useState('')
 
-  const [copiedReact, setCopiedReact] = useState(false);
-  const [copiedJson, setCopiedJson] = useState(false);
-  const [jsonImportText, setJsonImportText] = useState('');
-  const [jsonError, setJsonError] = useState('');
+  const [copiedReact, setCopiedReact] = useState(false)
+  const [copiedJson, setCopiedJson] = useState(false)
+  const [jsonImportText, setJsonImportText] = useState('')
+  const [jsonError, setJsonError] = useState('')
 
   const themeVariables = customPrimaryColor
     ? ({ '--primary': customPrimaryColor, '--ring': customPrimaryColor } as React.CSSProperties)
-    : undefined;
+    : undefined
 
   const resetDefaults = () => {
-    setTheme('light');
-    setColorTheme('default');
-    setLanguage('pt-BR');
-    setCustomPrimaryColor('');
-    setShowOnlineStatus(true);
-    setCustomTitle('');
-    setCustomSupportText('');
-    setCustomGreeting('');
-    setJsonImportText('');
-    setJsonError('');
-  };
+    setTheme('light')
+    setColorTheme('default')
+    setLanguage('pt-BR')
+    setCustomPrimaryColor('')
+    setShowOnlineStatus(true)
+    setCustomTitle('')
+    setCustomSupportText('')
+    setCustomGreeting('')
+    setJsonImportText('')
+    setJsonError('')
+  }
 
   const themes: { id: ColorTheme; label: string; colorClass: string }[] = [
     { id: 'default', label: 'Zinc', colorClass: 'bg-zinc-900 dark:bg-zinc-100' },
     { id: 'rose', label: 'Rose', colorClass: 'bg-rose-600' },
     { id: 'emerald', label: 'Emerald', colorClass: 'bg-emerald-600' },
-    { id: 'violet', label: 'Violet', colorClass: 'bg-violet-600' },
-  ];
+    { id: 'violet', label: 'Violet', colorClass: 'bg-violet-600' }
+  ]
 
   const generateReactSnippet = () => {
-    const props = [];
+    const props = []
 
-    if (theme !== 'light') props.push(`theme="${theme}"`);
-    if (colorTheme !== 'default') props.push(`colorTheme="${colorTheme}"`);
-    if (language !== 'pt-BR') props.push(`uiLanguage="${language}"`);
-    if (!showOnlineStatus) props.push(`showOnlineStatus={false}`);
+    if (theme !== 'light') props.push(`theme="${theme}"`)
+    if (colorTheme !== 'default') props.push(`colorTheme="${colorTheme}"`)
+    if (language !== 'pt-BR') props.push(`uiLanguage="${language}"`)
+    if (!showOnlineStatus) props.push(`showOnlineStatus={false}`)
 
     if (customPrimaryColor) {
-      props.push(
-        `themeVariables={{ '--primary': '${customPrimaryColor}', '--ring': '${customPrimaryColor}' }}`,
-      );
+      props.push(`themeVariables={{ '--primary': '${customPrimaryColor}', '--ring': '${customPrimaryColor}' }}`)
     }
 
-    const customTexts = [];
-    if (customTitle) customTexts.push(`title: "${customTitle}"`);
-    if (customGreeting) customTexts.push(`greeting: "${customGreeting}"`);
-    if (customSupportText) customTexts.push(`supportText: "${customSupportText}"`);
+    const customTexts = []
+    if (customTitle) customTexts.push(`title: "${customTitle}"`)
+    if (customGreeting) customTexts.push(`greeting: "${customGreeting}"`)
+    if (customSupportText) customTexts.push(`supportText: "${customSupportText}"`)
 
     if (customTexts.length > 0) {
-      props.push(`texts={{\n        ${customTexts.join(',\n        ')}\n      }}`);
+      props.push(`texts={{\n        ${customTexts.join(',\n        ')}\n      }}`)
     }
 
-    const propsString = props.length > 0 ? `\n      ${props.join('\n      ')}\n    ` : ' ';
+    const propsString = props.length > 0 ? `\n      ${props.join('\n      ')}\n    ` : ' '
 
     return `import { Widget } from '@openknowledge/react';
 
@@ -97,8 +95,8 @@ export default function App() {
       <Widget.Content />
     </Widget.Root>
   );
-}`;
-  };
+}`
+  }
 
   const generateJsonConfig = () => {
     return JSON.stringify(
@@ -110,42 +108,42 @@ export default function App() {
         customPrimaryColor,
         customTitle,
         customGreeting,
-        customSupportText,
+        customSupportText
       },
       null,
-      2,
-    );
-  };
+      2
+    )
+  }
 
   const copyToClipboard = (text: string, type: 'react' | 'json') => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text)
     if (type === 'react') {
-      setCopiedReact(true);
-      setTimeout(() => setCopiedReact(false), 2000);
+      setCopiedReact(true)
+      setTimeout(() => setCopiedReact(false), 2000)
     } else {
-      setCopiedJson(true);
-      setTimeout(() => setCopiedJson(false), 2000);
+      setCopiedJson(true)
+      setTimeout(() => setCopiedJson(false), 2000)
     }
-  };
+  }
 
   const handleImportJson = () => {
     try {
-      const parsed = JSON.parse(jsonImportText);
-      if (parsed.theme) setTheme(parsed.theme);
-      if (parsed.colorTheme) setColorTheme(parsed.colorTheme);
-      if (parsed.language) setLanguage(parsed.language);
-      if (parsed.showOnlineStatus !== undefined) setShowOnlineStatus(parsed.showOnlineStatus);
-      if (parsed.customPrimaryColor !== undefined) setCustomPrimaryColor(parsed.customPrimaryColor);
-      if (parsed.customTitle !== undefined) setCustomTitle(parsed.customTitle);
-      if (parsed.customGreeting !== undefined) setCustomGreeting(parsed.customGreeting);
-      if (parsed.customSupportText !== undefined) setCustomSupportText(parsed.customSupportText);
-      setJsonError('');
+      const parsed = JSON.parse(jsonImportText)
+      if (parsed.theme) setTheme(parsed.theme)
+      if (parsed.colorTheme) setColorTheme(parsed.colorTheme)
+      if (parsed.language) setLanguage(parsed.language)
+      if (parsed.showOnlineStatus !== undefined) setShowOnlineStatus(parsed.showOnlineStatus)
+      if (parsed.customPrimaryColor !== undefined) setCustomPrimaryColor(parsed.customPrimaryColor)
+      if (parsed.customTitle !== undefined) setCustomTitle(parsed.customTitle)
+      if (parsed.customGreeting !== undefined) setCustomGreeting(parsed.customGreeting)
+      if (parsed.customSupportText !== undefined) setCustomSupportText(parsed.customSupportText)
+      setJsonError('')
       // Update the textarea to reflect the applied config formatting
-      setJsonImportText(JSON.stringify(parsed, null, 2));
+      setJsonImportText(JSON.stringify(parsed, null, 2))
     } catch (_e) {
-      setJsonError('Invalid JSON format. Please check your configuration.');
+      setJsonError('Invalid JSON format. Please check your configuration.')
     }
-  };
+  }
 
   return (
     <div
@@ -161,9 +159,7 @@ export default function App() {
               </div>
               <div>
                 <h1 className="text-xl font-bold tracking-tight">OpenKnowledge</h1>
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Playground
-                </p>
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Playground</p>
               </div>
             </div>
             <button
@@ -204,9 +200,7 @@ export default function App() {
 
                 {/* Mode Toggle */}
                 <div className="space-y-3">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    Mode
-                  </label>
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">Mode</label>
                   <div className="grid grid-cols-2 gap-2 p-1 bg-muted/50 rounded-xl border border-border/50">
                     <button
                       onClick={() => setTheme('light')}
@@ -281,9 +275,7 @@ export default function App() {
               <section className="space-y-5">
                 <div className="flex items-center gap-2 text-foreground pb-2 border-b border-border/50">
                   <Type className="w-4 h-4 text-primary" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider">
-                    Content & Locale
-                  </h2>
+                  <h2 className="text-sm font-semibold uppercase tracking-wider">Content & Locale</h2>
                 </div>
 
                 {/* Language Selector */}
@@ -299,7 +291,7 @@ export default function App() {
                       backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='currentColor' class='w-4 h-4 text-gray-500'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E")`,
                       backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'right 1rem center',
-                      backgroundSize: '1em',
+                      backgroundSize: '1em'
                     }}
                   >
                     <option value="pt-BR">🇧🇷 Português (Brasil)</option>
@@ -311,9 +303,7 @@ export default function App() {
                 {/* Text Overrides */}
                 <div className="space-y-4 pt-2">
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">
-                      Override Title
-                    </label>
+                    <label className="text-xs font-medium text-muted-foreground">Override Title</label>
                     <input
                       type="text"
                       placeholder="e.g. Acme Support"
@@ -323,9 +313,7 @@ export default function App() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">
-                      Override Greeting
-                    </label>
+                    <label className="text-xs font-medium text-muted-foreground">Override Greeting</label>
                     <input
                       type="text"
                       placeholder="e.g. How can we help today?"
@@ -335,9 +323,7 @@ export default function App() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">
-                      Override Support Footer
-                    </label>
+                    <label className="text-xs font-medium text-muted-foreground">Override Support Footer</label>
                     <input
                       type="text"
                       placeholder="e.g. Powered by Acme Corp"
@@ -359,11 +345,7 @@ export default function App() {
                     onClick={() => copyToClipboard(generateReactSnippet(), 'react')}
                     className="flex items-center gap-1.5 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-md transition-colors"
                   >
-                    {copiedReact ? (
-                      <Check className="w-3.5 h-3.5" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
+                    {copiedReact ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     {copiedReact ? 'Copied' : 'Copy Code'}
                   </button>
                 </div>
@@ -373,8 +355,8 @@ export default function App() {
                   </pre>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Copy this snippet into your React application to reproduce the exact widget
-                  configuration you've designed.
+                  Copy this snippet into your React application to reproduce the exact widget configuration you've
+                  designed.
                 </p>
               </section>
 
@@ -385,8 +367,8 @@ export default function App() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        setJsonImportText(generateJsonConfig());
-                        setJsonError('');
+                        setJsonImportText(generateJsonConfig())
+                        setJsonError('')
                       }}
                       className="flex items-center gap-1.5 text-xs font-medium bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-1.5 rounded-md transition-colors"
                     >
@@ -396,11 +378,7 @@ export default function App() {
                       onClick={() => copyToClipboard(generateJsonConfig(), 'json')}
                       className="flex items-center gap-1.5 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-md transition-colors"
                     >
-                      {copiedJson ? (
-                        <Check className="w-3.5 h-3.5" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
+                      {copiedJson ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                       {copiedJson ? 'Copied' : 'Copy JSON'}
                     </button>
                   </div>
@@ -413,9 +391,7 @@ export default function App() {
                     className={`w-full bg-background border rounded-xl p-4 text-[13px] font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[160px] resize-y shadow-sm ${jsonError ? 'border-destructive focus:border-destructive' : 'border-border/50 focus:border-primary'}`}
                     spellCheck="false"
                   />
-                  {jsonError && (
-                    <p className="text-xs text-destructive mt-2 font-medium">{jsonError}</p>
-                  )}
+                  {jsonError && <p className="text-xs text-destructive mt-2 font-medium">{jsonError}</p>}
                 </div>
                 <button
                   onClick={handleImportJson}
@@ -425,8 +401,8 @@ export default function App() {
                   <Import className="w-4 h-4" /> Apply Configuration
                 </button>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  You can paste a previously exported JSON configuration here and click "Apply" to
-                  load those settings into the playground.
+                  You can paste a previously exported JSON configuration here and click "Apply" to load those settings
+                  into the playground.
                 </p>
               </section>
             </div>
@@ -445,18 +421,14 @@ export default function App() {
             <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3 shadow-inner">
               <LayoutTemplate className="w-10 h-10 text-primary -rotate-3" />
             </div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              Mock Application Environment
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">Mock Application Environment</h2>
             <p className="text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto">
-              This area simulates your host application. The widget is positioned in the bottom
-              right corner.
+              This area simulates your host application. The widget is positioned in the bottom right corner.
             </p>
 
             <div className="pt-8 flex flex-wrap justify-center gap-4">
               <div className="px-4 py-2 rounded-full bg-muted text-muted-foreground text-sm font-medium border border-border/50 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live Preview
-                Active
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live Preview Active
               </div>
             </div>
           </div>
@@ -474,14 +446,14 @@ export default function App() {
         texts={{
           ...(customTitle ? { title: customTitle } : {}),
           ...(customGreeting ? { greeting: customGreeting } : {}),
-          ...(customSupportText ? { supportText: customSupportText } : {}),
+          ...(customSupportText ? { supportText: customSupportText } : {})
         }}
       >
         <Widget.Trigger />
         <Widget.Content />
       </Widget.Root>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

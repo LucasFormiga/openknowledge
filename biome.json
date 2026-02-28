@@ -7,6 +7,8 @@
   },
   "files": {
     "includes": [
+      "packages/**",
+      "apps/**",
       "**/src/**",
       "!!src/lib/api-client",
       "!!**/tests",
@@ -76,7 +78,8 @@
       "suspicious": {
         "noExplicitAny": "off",
         "noArrayIndexKey": "off",
-        "noDoubleEquals": "error"
+        "noDoubleEquals": "error",
+        "noUnknownAtRules": "off"
       },
       "a11y": {
         "recommended": false

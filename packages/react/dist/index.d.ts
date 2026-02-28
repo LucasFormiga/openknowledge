@@ -32,7 +32,7 @@ interface WidgetRootProps {
     showOnlineStatus?: boolean;
     className?: string;
 }
-declare function Root({ children, defaultOpen, theme, colorTheme, uiLanguage, texts, icons, themeVariables, preventCloseOnOutsideClick, showOnlineStatus, className, }: WidgetRootProps): react_jsx_runtime.JSX.Element;
+declare function Root({ children, defaultOpen, theme, colorTheme, uiLanguage, texts, icons, themeVariables, preventCloseOnOutsideClick, showOnlineStatus, className }: WidgetRootProps): react_jsx_runtime.JSX.Element;
 interface WidgetTriggerProps {
     children?: ReactNode;
     className?: string;
