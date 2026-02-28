@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Default Zinc Theme */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 1rem; /* Softer, larger radius for modern look */
+  }
+
+  .dark {
+    /* Default Zinc Dark */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer components {
+  /* High-specificity theme overrides */
+
+  /* =========================================
+     Rose Theme
+     ========================================= */
+  .openknowledge-widget.theme-rose {
+    --background: 355 100% 99%;
+    --foreground: 350 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 350 30% 15%;
+    --popover: 355 100% 99%;
+    --popover-foreground: 350 30% 15%;
+    --primary: 346.8 77.2% 49.8%;
+    --primary-foreground: 355 100% 98%;
+    --secondary: 350 20% 94%;
+    --secondary-foreground: 346.8 77.2% 49.8%;
+    --muted: 350 20% 96%;
+    --muted-foreground: 350 15% 45%;
+    --accent: 350 30% 95%;
+    --accent-foreground: 346.8 77.2% 35%;
+    --border: 350 20% 90%;
+    --input: 350 20% 90%;
+    --ring: 346.8 77.2% 49.8%;
+  }
+  .openknowledge-widget.theme-rose.dark {
+    --background: 350 40% 4%;
+    --foreground: 350 20% 95%;
+    --card: 350 40% 6%;
+    --card-foreground: 350 20% 95%;
+    --popover: 350 40% 6%;
+    --popover-foreground: 350 20% 95%;
+    --primary: 346.8 77.2% 55%;
+    --primary-foreground: 350 100% 10%;
+    --secondary: 350 30% 12%;
+    --secondary-foreground: 350 20% 95%;
+    --muted: 350 30% 10%;
+    --muted-foreground: 350 15% 65%;
+    --accent: 350 40% 14%;
+    --accent-foreground: 350 40% 90%;
+    --border: 350 30% 14%;
+    --input: 350 30% 14%;
+    --ring: 346.8 77.2% 55%;
+  }
+
+  /* =========================================
+     Emerald Theme
+     ========================================= */
+  .openknowledge-widget.theme-emerald {
+    --background: 150 60% 99%;
+    --foreground: 150 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 30% 15%;
+    --popover: 150 60% 99%;
+    --popover-foreground: 150 30% 15%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 150 100% 98%;
+    --secondary: 150 20% 94%;
+    --secondary-foreground: 142.1 76.2% 36.3%;
+    --muted: 150 20% 95%;
+    --muted-foreground: 150 15% 45%;
+    --accent: 150 30% 93%;
+    --accent-foreground: 142.1 76.2% 25%;
+    --border: 150 20% 88%;
+    --input: 150 20% 88%;
+    --ring: 142.1 76.2% 36.3%;
+  }
+  .openknowledge-widget.theme-emerald.dark {
+    --background: 150 40% 4%;
+    --foreground: 150 20% 95%;
+    --card: 150 40% 6%;
+    --card-foreground: 150 20% 95%;
+    --popover: 150 40% 6%;
+    --popover-foreground: 150 20% 95%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 150 100% 10%;
+    --secondary: 150 30% 12%;
+    --secondary-foreground: 150 20% 95%;
+    --muted: 150 30% 10%;
+    --muted-foreground: 150 15% 65%;
+    --accent: 150 40% 14%;
+    --accent-foreground: 150 40% 90%;
+    --border: 150 30% 14%;
+    --input: 150 30% 14%;
+    --ring: 142.1 70.6% 45.3%;
+  }
+
+  /* =========================================
+     Violet Theme
+     ========================================= */
+  .openknowledge-widget.theme-violet {
+    --background: 260 60% 99%;
+    --foreground: 260 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 260 30% 15%;
+    --popover: 260 60% 99%;
+    --popover-foreground: 260 30% 15%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 260 100% 98%;
+    --secondary: 260 20% 94%;
+    --secondary-foreground: 262.1 83.3% 57.8%;
+    --muted: 260 20% 96%;
+    --muted-foreground: 260 15% 45%;
+    --accent: 260 30% 94%;
+    --accent-foreground: 262.1 83.3% 40%;
+    --border: 260 20% 90%;
+    --input: 260 20% 90%;
+    --ring: 262.1 83.3% 57.8%;
+  }
+  .openknowledge-widget.theme-violet.dark {
+    --background: 260 40% 4%;
+    --foreground: 260 20% 95%;
+    --card: 260 40% 6%;
+    --card-foreground: 260 20% 95%;
+    --popover: 260 40% 6%;
+    --popover-foreground: 260 20% 95%;
+    --primary: 263.4 70% 60%;
+    --primary-foreground: 260 100% 10%;
+    --secondary: 260 30% 14%;
+    --secondary-foreground: 260 20% 95%;
+    --muted: 260 30% 12%;
+    --muted-foreground: 260 15% 70%;
+    --accent: 260 40% 18%;
+    --accent-foreground: 260 40% 92%;
+    --border: 260 30% 16%;
+    --input: 260 30% 16%;
+    --ring: 263.4 70% 60%;
+  }
+}
+
+@layer base {
+  .openknowledge-widget {
+    * {
+      @apply border-border;
+    }
+  }
+}

@@ -1,0 +1,57 @@
+
+[1;31m----------
+
+NOTICE:
+
+You have tried to upgrade to asdf 0.16.0 or newer. Versions 0.16.0 is a
+complete rewrite of asdf in Go. This text is being printed by the older
+Bash implementation. If you are seeing this you have not migrated to
+asdf 0.16.0. Please follow the instructions on the upgrade guide to
+migrate to the new version.
+
+Aside from this notice, this older Bash implementation works as it did
+in asdf version 0.15.0 and older.
+
+Migration guide: https://asdf-vm.com/guide/upgrading-to-v0-16
+asdf website: https://asdf-vm.com
+Source code: https://github.com/asdf-vm/asdf
+[0m
+
+
+> @openknowledge/react@0.1.0 test
+> vitest run
+
+[?25l
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/lucas/Developer/openknowledge/packages/react[39m
+
+[?2026h
+[1m[33m ❯ [39m[22msrc/components/organisms/Widget/Widget.test.tsx[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m16:13:32
+[2m   Duration [22m570ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/components/organisms/Widget/Widget.test.tsx[2m 0/1[22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m16:13:32
+[2m   Duration [22m774ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/components/organisms/Widget/Widget.test.tsx[2m 0/1[22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m16:13:32
+[2m   Duration [22m974ms
+[?2026l[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/components/organisms/Widget/Widget.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 198[2mms[22m[39m
+   [32m✓[39m Widget [2m(1)[22m
+     [32m✓[39m should render trigger and open content on click[32m 194[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 16:13:32
+[2m   Duration [22m 1.04s[2m (transform 58ms, setup 97ms, import 149ms, tests 198ms, environment 495ms)[22m
+
+[?25h⠙[1G[0K
