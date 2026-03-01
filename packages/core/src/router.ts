@@ -5,9 +5,8 @@ import { createOpenaiChat } from '@tanstack/ai-openai'
 import type { Config } from './config.js'
 import type { AgentIdentity, KnowledgeBase, SecurityGuard, SkillInfo } from './domain/types.js'
 import { FileSystemKnowledgeLoader } from './infrastructure/file-loader.js'
-import { StaticKnowledgeLoader } from './infrastructure/static-loader.js'
 
-export interface RouterOptions {
+export interface AgentOptions {
   config: Config
   identity?: AgentIdentity
   security?: SecurityGuard
@@ -15,14 +14,17 @@ export interface RouterOptions {
   skills?: SkillInfo[]
 }
 
-export class KnowledgeRouter {
+/**
+ * Internal class that handles the AI routing logic.
+ */
+export class AgentInstance {
   private config: Config
   private identity?: AgentIdentity
   private security?: SecurityGuard
   private knowledge?: KnowledgeBase
   private skills: SkillInfo[]
 
-  constructor(options: RouterOptions) {
+  constructor(options: AgentOptions) {
     this.config = options.config
     this.identity = options.identity
     this.security = options.security
@@ -30,32 +32,7 @@ export class KnowledgeRouter {
     this.skills = options.skills || []
   }
 
-  static async fromDir(config: Config, dirPath: string): Promise<KnowledgeRouter> {
-    const loader = new FileSystemKnowledgeLoader()
-    const { identity, security, knowledge, skills } = await loader.loadFromDir(dirPath)
-    return new KnowledgeRouter({
-      config,
-      identity,
-      security,
-      knowledge,
-      skills
-    })
-  }
-
-  static fromStatic(config: Config, files: Record<string, string>): KnowledgeRouter {
-    const loader = new StaticKnowledgeLoader()
-    const { identity, security, knowledge, skills } = loader.loadFromRecord(files)
-    console.log('Identity', identity)
-    return new KnowledgeRouter({
-      config,
-      identity,
-      security,
-      knowledge,
-      skills
-    })
-  }
-
-  getSystemPrompt(): string {
+  private getSystemPrompt(): string {
     const languageMap: Record<string, string> = {
       'pt-BR': 'Responda sempre em Português do Brasil.',
       pt: 'Responda sempre em Português do Brasil.',
@@ -109,25 +86,29 @@ export class KnowledgeRouter {
     return prompt
   }
 
-  private getAdapter() {
+  private getAdapter(apiKey?: string) {
     const { AI_PROVIDER, AI_MODEL, GEMINI_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY } = this.config
-    console.log('Config', this.config)
+    const finalKey = apiKey || GEMINI_API_KEY || ANTHROPIC_API_KEY || OPENAI_API_KEY
+
+    if (!finalKey) {
+      throw new Error(`No API key provided for ${AI_PROVIDER}`)
+    }
 
     switch (AI_PROVIDER) {
       case 'openai':
-        return createOpenaiChat(AI_MODEL as any, OPENAI_API_KEY as string)
+        return createOpenaiChat(AI_MODEL as any, finalKey)
       case 'anthropic':
-        return createAnthropicChat(AI_MODEL as any, ANTHROPIC_API_KEY as string)
+        return createAnthropicChat(AI_MODEL as any, finalKey)
       case 'gemini':
-        return createGeminiChat(AI_MODEL as any, GEMINI_API_KEY as string)
+        return createGeminiChat(AI_MODEL as any, finalKey)
       default:
         throw new Error(`Unsupported AI provider: ${AI_PROVIDER}`)
     }
   }
 
-  async ask(question: string): Promise<string> {
+  async ask(question: string, apiKey?: string): Promise<string> {
     const prompt = this.getSystemPrompt()
-    const adapter = this.getAdapter()
+    const adapter = this.getAdapter(apiKey)
 
     const result = await chat({
       adapter,
@@ -139,5 +120,26 @@ export class KnowledgeRouter {
     })
 
     return result
+  }
+}
+
+/**
+ * Creates a new OpenKnowledge agent by loading configuration from a directory.
+ * This should only be called in Node.js environments.
+ * 
+ * @param config AI provider configuration and defaults
+ * @param configDir Path to the directory containing behavior.md, security.md, etc.
+ */
+export async function createAgent(config: Config, configDir: string) {
+  const loader = new FileSystemKnowledgeLoader()
+  const result = await loader.loadFromDir(configDir)
+
+  const instance = new AgentInstance({
+    config,
+    ...result
+  })
+
+  return {
+    ask: (question: string, apiKey?: string) => instance.ask(question, apiKey)
   }
 }

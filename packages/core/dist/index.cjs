@@ -30,16 +30,9 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
-  FileSystemKnowledgeLoader: () => FileSystemKnowledgeLoader,
-  KnowledgeRouter: () => KnowledgeRouter,
-  StaticKnowledgeLoader: () => StaticKnowledgeLoader,
   configSchema: () => configSchema,
-  extractMarkdownSections: () => extractMarkdownSections,
-  parseEnv: () => parseEnv,
-  parseIdentityMarkdown: () => parseIdentityMarkdown,
-  parseKnowledgeMarkdown: () => parseKnowledgeMarkdown,
-  parseSecurityMarkdown: () => parseSecurityMarkdown,
-  parseSkillMarkdown: () => parseSkillMarkdown
+  createAgent: () => createAgent,
+  parseEnv: () => parseEnv
 });
 module.exports = __toCommonJS(index_exports);
 
@@ -57,6 +50,12 @@ var configSchema = import_zod.z.object({
 function parseEnv(env) {
   return configSchema.parse(env);
 }
+
+// src/router.ts
+var import_ai = require("@tanstack/ai");
+var import_ai_anthropic = require("@tanstack/ai-anthropic");
+var import_ai_gemini = require("@tanstack/ai-gemini");
+var import_ai_openai = require("@tanstack/ai-openai");
 
 // src/infrastructure/file-loader.ts
 var import_promises = __toESM(require("fs/promises"), 1);
@@ -180,42 +179,8 @@ var FileSystemKnowledgeLoader = class {
   }
 };
 
-// src/infrastructure/static-loader.ts
-var StaticKnowledgeLoader = class {
-  loadFromRecord(files) {
-    const result = {};
-    const knowledgeSources = [];
-    const skills = [];
-    for (const [path2, content] of Object.entries(files)) {
-      const parts = path2.split("/");
-      const fileName = parts[parts.length - 1];
-      if (fileName === "behavior.md") {
-        result.identity = parseIdentityMarkdown(content);
-      } else if (fileName === "security.md") {
-        result.security = parseSecurityMarkdown(content);
-      } else if (parts.includes("knowledge") && fileName.endsWith(".md")) {
-        const id = fileName.replace(".md", "");
-        knowledgeSources.push(parseKnowledgeMarkdown(id, content));
-      } else if (parts.includes("skills") && fileName.endsWith(".md")) {
-        skills.push(parseSkillMarkdown(content));
-      }
-    }
-    if (knowledgeSources.length > 0) {
-      result.knowledge = { sources: knowledgeSources };
-    }
-    if (skills.length > 0) {
-      result.skills = skills;
-    }
-    return result;
-  }
-};
-
 // src/router.ts
-var import_ai = require("@tanstack/ai");
-var import_ai_anthropic = require("@tanstack/ai-anthropic");
-var import_ai_gemini = require("@tanstack/ai-gemini");
-var import_ai_openai = require("@tanstack/ai-openai");
-var KnowledgeRouter = class _KnowledgeRouter {
+var AgentInstance = class {
   config;
   identity;
   security;
@@ -227,29 +192,6 @@ var KnowledgeRouter = class _KnowledgeRouter {
     this.security = options.security;
     this.knowledge = options.knowledge;
     this.skills = options.skills || [];
-  }
-  static async fromDir(config, dirPath) {
-    const loader = new FileSystemKnowledgeLoader();
-    const { identity, security, knowledge, skills } = await loader.loadFromDir(dirPath);
-    return new _KnowledgeRouter({
-      config,
-      identity,
-      security,
-      knowledge,
-      skills
-    });
-  }
-  static fromStatic(config, files) {
-    const loader = new StaticKnowledgeLoader();
-    const { identity, security, knowledge, skills } = loader.loadFromRecord(files);
-    console.log("Identity", identity);
-    return new _KnowledgeRouter({
-      config,
-      identity,
-      security,
-      knowledge,
-      skills
-    });
   }
   getSystemPrompt() {
     const languageMap = {
@@ -324,23 +266,26 @@ ${skill.instructions}
     }
     return prompt;
   }
-  getAdapter() {
+  getAdapter(apiKey) {
     const { AI_PROVIDER, AI_MODEL, GEMINI_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY } = this.config;
-    console.log("Config", this.config);
+    const finalKey = apiKey || GEMINI_API_KEY || ANTHROPIC_API_KEY || OPENAI_API_KEY;
+    if (!finalKey) {
+      throw new Error(`No API key provided for ${AI_PROVIDER}`);
+    }
     switch (AI_PROVIDER) {
       case "openai":
-        return (0, import_ai_openai.createOpenaiChat)(AI_MODEL, OPENAI_API_KEY);
+        return (0, import_ai_openai.createOpenaiChat)(AI_MODEL, finalKey);
       case "anthropic":
-        return (0, import_ai_anthropic.createAnthropicChat)(AI_MODEL, ANTHROPIC_API_KEY);
+        return (0, import_ai_anthropic.createAnthropicChat)(AI_MODEL, finalKey);
       case "gemini":
-        return (0, import_ai_gemini.createGeminiChat)(AI_MODEL, GEMINI_API_KEY);
+        return (0, import_ai_gemini.createGeminiChat)(AI_MODEL, finalKey);
       default:
         throw new Error(`Unsupported AI provider: ${AI_PROVIDER}`);
     }
   }
-  async ask(question) {
+  async ask(question, apiKey) {
     const prompt = this.getSystemPrompt();
-    const adapter = this.getAdapter();
+    const adapter = this.getAdapter(apiKey);
     const result = await (0, import_ai.chat)({
       adapter,
       messages: [
@@ -352,16 +297,20 @@ ${skill.instructions}
     return result;
   }
 };
+async function createAgent(config, configDir) {
+  const loader = new FileSystemKnowledgeLoader();
+  const result = await loader.loadFromDir(configDir);
+  const instance = new AgentInstance({
+    config,
+    ...result
+  });
+  return {
+    ask: (question, apiKey) => instance.ask(question, apiKey)
+  };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  FileSystemKnowledgeLoader,
-  KnowledgeRouter,
-  StaticKnowledgeLoader,
   configSchema,
-  extractMarkdownSections,
-  parseEnv,
-  parseIdentityMarkdown,
-  parseKnowledgeMarkdown,
-  parseSecurityMarkdown,
-  parseSkillMarkdown
+  createAgent,
+  parseEnv
 });

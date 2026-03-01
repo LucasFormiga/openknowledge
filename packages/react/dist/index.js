@@ -2,109 +2,8 @@
 import * as Popover from "@radix-ui/react-popover";
 import { clsx } from "clsx";
 import { Bot, Maximize2, MessageSquare, Minimize2, Send, User, X } from "lucide-react";
-import { createContext, useContext, useEffect as useEffect2, useMemo, useRef as useRef2, useState as useState2 } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
-
-// src/hooks/use-knowledge.ts
-import { KnowledgeRouter } from "@openknowledge/core";
-import { useCallback, useEffect, useRef, useState } from "react";
-function useKnowledge(options = {}) {
-  const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const routerRef = useRef(null);
-  const isDev = options?.isDev || false;
-  useEffect(() => {
-    if (isDev) return;
-    if (options.config && options.initialData) {
-      routerRef.current = new KnowledgeRouter({
-        config: options.config,
-        ...options.initialData
-      });
-      return;
-    }
-    if (options.config && options.initialFiles) {
-      routerRef.current = KnowledgeRouter.fromStatic(options.config, options.initialFiles);
-      return;
-    }
-    if (options.config && options.configDir) {
-      const isNode = typeof process !== "undefined" && process.versions?.node;
-      if (!isNode) {
-        console.warn(
-          "KnowledgeRouter.fromDir() is only supported in Node.js environments. Please provide initialData for browser use."
-        );
-        return;
-      }
-      KnowledgeRouter.fromDir(options.config, options.configDir).then((router) => {
-        routerRef.current = router;
-      }).catch((err) => {
-        console.error("Failed to initialize KnowledgeRouter from directory:", err);
-      });
-    } else if (!options.config && !isDev) {
-      console.error("No configuration provided for KnowledgeRouter in non-dev mode.");
-    }
-  }, [options.config, options.configDir, options.initialData, options.initialFiles, isDev]);
-  const ask = useCallback(
-    async (question) => {
-      if (!question.trim()) return;
-      const userMessage = {
-        role: "user",
-        content: question,
-        timestamp: /* @__PURE__ */ new Date()
-      };
-      setMessages((prev) => [...prev, userMessage]);
-      setIsLoading(true);
-      try {
-        const assistantMessage = {
-          role: "assistant",
-          content: "Default Value",
-          timestamp: /* @__PURE__ */ new Date()
-        };
-        if (isDev || !routerRef.current) {
-          console.log("Mocking response in development mode");
-          await new Promise((resolve) => setTimeout(resolve, 1e3));
-          return setMessages((prev) => [
-            ...prev,
-            {
-              ...assistantMessage,
-              content: `This is a mocked response in development mode for your question: "${question}". Configure your API keys to see real AI responses.`
-            }
-          ]);
-        }
-        const response = await routerRef?.current?.ask(question);
-        console.log("Resposta", response);
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...assistantMessage,
-            content: response || "No response received"
-          }
-        ]);
-      } catch (error) {
-        const errorMessage = {
-          role: "assistant",
-          content: "Sorry, I encountered an error while processing your request.",
-          timestamp: /* @__PURE__ */ new Date()
-        };
-        console.error("Error in knowledge router:", error);
-        setMessages((prev) => [...prev, errorMessage]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [isDev]
-  );
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-  }, []);
-  return {
-    messages,
-    isLoading,
-    ask,
-    clearMessages
-  };
-}
-
-// src/components/organisms/Widget/Widget.tsx
 import { jsx, jsxs } from "react/jsx-runtime";
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -155,6 +54,9 @@ function useWidget() {
 }
 function Root2({
   children,
+  messages,
+  isProcessing,
+  onSendMessage,
   defaultOpen = false,
   theme = "light",
   colorTheme = "default",
@@ -164,16 +66,10 @@ function Root2({
   themeVariables,
   preventCloseOnOutsideClick,
   showOnlineStatus = true,
-  className,
-  config,
-  configDir,
-  initialData,
-  initialFiles,
-  isDev
+  className
 }) {
-  const [isOpen, setIsOpen] = useState2(defaultOpen);
-  const [isMaximized, setIsMaximized] = useState2(false);
-  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, initialFiles, isDev });
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isMaximized, setIsMaximized] = useState(false);
   const mergedTexts = useMemo(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts]);
   const mergedIcons = useMemo(() => ({ ...defaultIcons, ...icons }), [icons]);
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
@@ -194,8 +90,8 @@ function Root2({
         preventCloseOnOutsideClick,
         showOnlineStatus,
         messages,
-        isLoading,
-        sendMessage: ask
+        isProcessing,
+        onSendMessage
       },
       children: /* @__PURE__ */ jsx(
         "div",
@@ -239,22 +135,22 @@ function Content2({ children, className }) {
     preventCloseOnOutsideClick,
     showOnlineStatus,
     messages,
-    isLoading,
-    sendMessage
+    isProcessing,
+    onSendMessage
   } = useWidget();
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
-  const [inputValue, setInputValue] = useState2("");
-  const scrollRef = useRef2(null);
-  useEffect2(() => {
+  const [inputValue, setInputValue] = useState("");
+  const scrollRef = useRef(null);
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
-  const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  }, [messages, isProcessing]);
+  const handleSend = () => {
+    if (!inputValue.trim() || isProcessing) return;
     const text = inputValue;
     setInputValue("");
-    await sendMessage(text);
+    onSendMessage(text);
   };
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -367,7 +263,7 @@ function Content2({ children, className }) {
                 },
                 i
               )),
-              isLoading && /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-3 max-w-[85%] animate-pulse", children: [
+              isProcessing && /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-3 max-w-[85%] animate-pulse", children: [
                 /* @__PURE__ */ jsx("div", { className: "flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary", children: /* @__PURE__ */ jsx(Bot, { className: "h-4 w-4" }) }),
                 /* @__PURE__ */ jsx("div", { className: "bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm", children: /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
                   /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce" }),
@@ -388,7 +284,7 @@ function Content2({ children, className }) {
                 onChange: (e) => setInputValue(e.target.value),
                 onKeyDown: handleKeyDown,
                 placeholder: texts.placeholder,
-                disabled: isLoading,
+                disabled: isProcessing,
                 className: "w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground disabled:opacity-50"
               }
             ),
@@ -397,7 +293,7 @@ function Content2({ children, className }) {
               {
                 type: "button",
                 onClick: handleSend,
-                disabled: !inputValue.trim() || isLoading,
+                disabled: !inputValue.trim() || isProcessing,
                 className: "absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:scale-100",
                 children: icons.submit
               }
@@ -416,6 +312,27 @@ var Widget = {
   Trigger: Trigger2,
   Content: Content2
 };
+
+// src/hooks/use-widget-messages.ts
+import { useCallback, useState as useState2 } from "react";
+function useWidgetMessages() {
+  const [messages, setMessages] = useState2([]);
+  const [isProcessing, setIsProcessing] = useState2(false);
+  const appendMessage = useCallback((message) => {
+    setMessages((prev) => [...prev, { ...message, timestamp: /* @__PURE__ */ new Date() }]);
+  }, []);
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+  }, []);
+  return {
+    messages,
+    isProcessing,
+    setIsProcessing,
+    appendMessage,
+    clearMessages
+  };
+}
 export {
-  Widget
+  Widget,
+  useWidgetMessages
 };

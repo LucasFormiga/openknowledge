@@ -52,48 +52,15 @@ interface LoaderResult {
     skills?: SkillInfo[];
 }
 
-declare class FileSystemKnowledgeLoader {
-    loadFromDir(baseDir: string): Promise<LoaderResult>;
-    private loadKnowledge;
-    private loadSkills;
-}
-
-declare class StaticKnowledgeLoader {
-    loadFromRecord(files: Record<string, string>): LoaderResult;
-}
-
 /**
- * Extracts sections from a markdown string based on headings.
- * Returns a map where keys are heading names (lowercase) and values are the content below them.
+ * Creates a new OpenKnowledge agent by loading configuration from a directory.
+ * This should only be called in Node.js environments.
+ *
+ * @param config AI provider configuration and defaults
+ * @param configDir Path to the directory containing behavior.md, security.md, etc.
  */
-declare function extractMarkdownSections(content: string): Map<string, string>;
-declare function parseIdentityMarkdown(content: string): AgentIdentity;
-declare function parseSecurityMarkdown(content: string): SecurityGuard;
-declare function parseKnowledgeMarkdown(id: string, content: string): KnowledgeItem;
-/**
- * Legacy support for Skills
- */
-declare function parseSkillMarkdown(content: string): SkillInfo;
+declare function createAgent(config: Config, configDir: string): Promise<{
+    ask: (question: string, apiKey?: string) => Promise<string>;
+}>;
 
-interface RouterOptions {
-    config: Config;
-    identity?: AgentIdentity;
-    security?: SecurityGuard;
-    knowledge?: KnowledgeBase;
-    skills?: SkillInfo[];
-}
-declare class KnowledgeRouter {
-    private config;
-    private identity?;
-    private security?;
-    private knowledge?;
-    private skills;
-    constructor(options: RouterOptions);
-    static fromDir(config: Config, dirPath: string): Promise<KnowledgeRouter>;
-    static fromStatic(config: Config, files: Record<string, string>): KnowledgeRouter;
-    getSystemPrompt(): string;
-    private getAdapter;
-    ask(question: string): Promise<string>;
-}
-
-export { type AgentIdentity, type Config, FileSystemKnowledgeLoader, type KnowledgeBase, type KnowledgeItem, KnowledgeRouter, type LoaderResult, type RouterOptions, type SecurityGuard, type SkillInfo, StaticKnowledgeLoader, configSchema, extractMarkdownSections, parseEnv, parseIdentityMarkdown, parseKnowledgeMarkdown, parseSecurityMarkdown, parseSkillMarkdown };
+export { type AgentIdentity, type Config, type KnowledgeBase, type KnowledgeItem, type LoaderResult, type SecurityGuard, type SkillInfo, configSchema, createAgent, parseEnv };

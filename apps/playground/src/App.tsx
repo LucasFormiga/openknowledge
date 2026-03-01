@@ -1,4 +1,4 @@
-import { Widget } from '@openknowledge/react'
+import { useWidgetMessages, Widget } from '@openknowledge/react'
 import {
   Check,
   Code2,
@@ -38,6 +38,50 @@ function App() {
   const [copiedJson, setCopiedJson] = useState(false)
   const [jsonImportText, setJsonImportText] = useState('')
   const [jsonError, setJsonError] = useState('')
+
+  // Widget State
+  const { messages, isProcessing, appendMessage, setIsProcessing } = useWidgetMessages()
+
+  const handleSendMessage = async (text: string) => {
+    // 1. Add user message locally
+    appendMessage({ role: 'user', content: text })
+
+    // 2. Set processing state
+    setIsProcessing(true)
+
+    // 3. Call actual API
+    try {
+      console.log('Sending message to server:', text)
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: text })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch from /api/chat')
+      }
+
+      const data = await response.json()
+
+      // 4. Add assistant response
+      appendMessage({
+        role: 'assistant',
+        content: data.text || 'No response from AI'
+      })
+    } catch (error) {
+      console.error('Error sending message:', error)
+      appendMessage({
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.'
+      })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   const themeVariables = customPrimaryColor
     ? ({ '--primary': customPrimaryColor, '--ring': customPrimaryColor } as React.CSSProperties)
@@ -86,11 +130,36 @@ function App() {
 
     const propsString = props.length > 0 ? `\n      ${props.join('\n      ')}\n    ` : ' '
 
-    return `import { Widget } from '@openknowledge/react';
+    return `import { Widget, useWidgetMessages } from '@openknowledge/react';
 
 export default function App() {
+  const { messages, isProcessing, appendMessage, setIsProcessing } = useWidgetMessages();
+
+  const handleSendMessage = async (text: string) => {
+    appendMessage({ role: 'user', content: text });
+    setIsProcessing(true);
+
+    try {
+      // Replace with your actual backend API call
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: text })
+      }).then(res => res.json());
+
+      appendMessage({ role: 'assistant', content: response.text });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
-    <Widget.Root${propsString}>
+    <Widget.Root
+      messages={messages}
+      isProcessing={isProcessing}
+      onSendMessage={handleSendMessage}${propsString}>
       <Widget.Trigger />
       <Widget.Content />
     </Widget.Root>
@@ -144,11 +213,6 @@ export default function App() {
       setJsonError('Invalid JSON format. Please check your configuration.')
     }
   }
-
-  const files = import.meta.glob('./agent/**/*.md', { eager: true, query: '?raw', import: 'default' }) as Record<
-    string,
-    string
-  >
 
   return (
     <div
@@ -442,26 +506,20 @@ export default function App() {
 
       {/* The Actual Widget Implementation */}
       <Widget.Root
+        messages={messages}
+        isProcessing={isProcessing}
+        onSendMessage={handleSendMessage}
         theme={theme}
         colorTheme={colorTheme}
         uiLanguage={language}
         themeVariables={themeVariables}
         showOnlineStatus={showOnlineStatus}
         preventCloseOnOutsideClick={true}
-        initialFiles={files}
-        config={{
-          AI_PROVIDER: 'gemini',
-          AI_MODEL: 'gemini-2.5-flash',
-          GEMINI_API_KEY: 'AIzaSyBO7ySSsHYxcHPzLBCNF9VZDbTR4I4plh0', // Placeholder for testing
-          DEFAULT_LANGUAGE: 'pt',
-          AI_TONE: 'professional and helpful'
-        }}
         texts={{
           ...(customTitle ? { title: customTitle } : {}),
           ...(customGreeting ? { greeting: customGreeting } : {}),
           ...(customSupportText ? { supportText: customSupportText } : {})
         }}
-        isDev={false}
       >
         <Widget.Trigger />
         <Widget.Content />

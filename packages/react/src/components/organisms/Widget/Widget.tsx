@@ -1,11 +1,10 @@
-import type { Config, LoaderResult } from '@openknowledge/core'
 import * as Popover from '@radix-ui/react-popover'
 import { type ClassValue, clsx } from 'clsx'
 import { Bot, Maximize2, MessageSquare, Minimize2, Send, User, X } from 'lucide-react'
 import type React from 'react'
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { type Message, useKnowledge } from '../../../hooks/use-knowledge.js'
+import type { Message } from '../../../hooks/use-widget-messages.js'
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -86,8 +85,8 @@ interface WidgetContextValue {
   preventCloseOnOutsideClick?: boolean
   showOnlineStatus?: boolean
   messages: Message[]
-  isLoading: boolean
-  sendMessage: (text: string) => Promise<void>
+  isProcessing: boolean
+  onSendMessage: (text: string) => void
 }
 
 const WidgetContext = createContext<WidgetContextValue | undefined>(undefined)
@@ -102,6 +101,9 @@ export function useWidget() {
 
 export interface WidgetRootProps {
   children: ReactNode
+  messages: Message[]
+  isProcessing: boolean
+  onSendMessage: (text: string) => void
   defaultOpen?: boolean
   theme?: 'light' | 'dark'
   colorTheme?: ColorTheme
@@ -112,15 +114,13 @@ export interface WidgetRootProps {
   preventCloseOnOutsideClick?: boolean
   showOnlineStatus?: boolean
   className?: string
-  config?: Config
-  configDir?: string
-  initialData?: LoaderResult
-  initialFiles?: Record<string, string>
-  isDev?: boolean
 }
 
 export function Root({
   children,
+  messages,
+  isProcessing,
+  onSendMessage,
   defaultOpen = false,
   theme = 'light',
   colorTheme = 'default',
@@ -130,17 +130,10 @@ export function Root({
   themeVariables,
   preventCloseOnOutsideClick,
   showOnlineStatus = true,
-  className,
-  config,
-  configDir,
-  initialData,
-  initialFiles,
-  isDev
+  className
 }: WidgetRootProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const [isMaximized, setIsMaximized] = useState(false)
-
-  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, initialFiles, isDev })
 
   const mergedTexts = useMemo(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts])
   const mergedIcons = useMemo(() => ({ ...defaultIcons, ...icons }), [icons])
@@ -163,8 +156,8 @@ export function Root({
         preventCloseOnOutsideClick,
         showOnlineStatus,
         messages,
-        isLoading,
-        sendMessage: ask
+        isProcessing,
+        onSendMessage
       }}
     >
       <div
@@ -226,8 +219,8 @@ export function Content({ children, className }: WidgetContentProps) {
     preventCloseOnOutsideClick,
     showOnlineStatus,
     messages,
-    isLoading,
-    sendMessage
+    isProcessing,
+    onSendMessage
   } = useWidget()
   const themeClass = colorTheme === 'default' ? '' : `theme-${colorTheme}`
   const [inputValue, setInputValue] = useState('')
@@ -237,13 +230,13 @@ export function Content({ children, className }: WidgetContentProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages, isLoading])
+  }, [messages, isProcessing])
 
-  const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return
+  const handleSend = () => {
+    if (!inputValue.trim() || isProcessing) return
     const text = inputValue
     setInputValue('')
-    await sendMessage(text)
+    onSendMessage(text)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -376,7 +369,7 @@ export function Content({ children, className }: WidgetContentProps) {
               ))}
 
               {/* Loading Indicator */}
-              {isLoading && (
+              {isProcessing && (
                 <div className="flex items-start gap-3 max-w-[85%] animate-pulse">
                   <div className="flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     <Bot className="h-4 w-4" />
@@ -404,13 +397,13 @@ export function Content({ children, className }: WidgetContentProps) {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={texts.placeholder}
-                disabled={isLoading}
+                disabled={isProcessing}
                 className="w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={handleSend}
-                disabled={!inputValue.trim() || isLoading}
+                disabled={!inputValue.trim() || isProcessing}
                 className="absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:scale-100"
               >
                 {icons.submit}

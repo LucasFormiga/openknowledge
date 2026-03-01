@@ -30,7 +30,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
-  Widget: () => Widget
+  Widget: () => Widget,
+  useWidgetMessages: () => useWidgetMessages
 });
 module.exports = __toCommonJS(index_exports);
 
@@ -38,109 +39,8 @@ module.exports = __toCommonJS(index_exports);
 var Popover = __toESM(require("@radix-ui/react-popover"), 1);
 var import_clsx = require("clsx");
 var import_lucide_react = require("lucide-react");
-var import_react2 = require("react");
-var import_tailwind_merge = require("tailwind-merge");
-
-// src/hooks/use-knowledge.ts
-var import_core = require("@openknowledge/core");
 var import_react = require("react");
-function useKnowledge(options = {}) {
-  const [messages, setMessages] = (0, import_react.useState)([]);
-  const [isLoading, setIsLoading] = (0, import_react.useState)(false);
-  const routerRef = (0, import_react.useRef)(null);
-  const isDev = options?.isDev || false;
-  (0, import_react.useEffect)(() => {
-    if (isDev) return;
-    if (options.config && options.initialData) {
-      routerRef.current = new import_core.KnowledgeRouter({
-        config: options.config,
-        ...options.initialData
-      });
-      return;
-    }
-    if (options.config && options.initialFiles) {
-      routerRef.current = import_core.KnowledgeRouter.fromStatic(options.config, options.initialFiles);
-      return;
-    }
-    if (options.config && options.configDir) {
-      const isNode = typeof process !== "undefined" && process.versions?.node;
-      if (!isNode) {
-        console.warn(
-          "KnowledgeRouter.fromDir() is only supported in Node.js environments. Please provide initialData for browser use."
-        );
-        return;
-      }
-      import_core.KnowledgeRouter.fromDir(options.config, options.configDir).then((router) => {
-        routerRef.current = router;
-      }).catch((err) => {
-        console.error("Failed to initialize KnowledgeRouter from directory:", err);
-      });
-    } else if (!options.config && !isDev) {
-      console.error("No configuration provided for KnowledgeRouter in non-dev mode.");
-    }
-  }, [options.config, options.configDir, options.initialData, options.initialFiles, isDev]);
-  const ask = (0, import_react.useCallback)(
-    async (question) => {
-      if (!question.trim()) return;
-      const userMessage = {
-        role: "user",
-        content: question,
-        timestamp: /* @__PURE__ */ new Date()
-      };
-      setMessages((prev) => [...prev, userMessage]);
-      setIsLoading(true);
-      try {
-        const assistantMessage = {
-          role: "assistant",
-          content: "Default Value",
-          timestamp: /* @__PURE__ */ new Date()
-        };
-        if (isDev || !routerRef.current) {
-          console.log("Mocking response in development mode");
-          await new Promise((resolve) => setTimeout(resolve, 1e3));
-          return setMessages((prev) => [
-            ...prev,
-            {
-              ...assistantMessage,
-              content: `This is a mocked response in development mode for your question: "${question}". Configure your API keys to see real AI responses.`
-            }
-          ]);
-        }
-        const response = await routerRef?.current?.ask(question);
-        console.log("Resposta", response);
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...assistantMessage,
-            content: response || "No response received"
-          }
-        ]);
-      } catch (error) {
-        const errorMessage = {
-          role: "assistant",
-          content: "Sorry, I encountered an error while processing your request.",
-          timestamp: /* @__PURE__ */ new Date()
-        };
-        console.error("Error in knowledge router:", error);
-        setMessages((prev) => [...prev, errorMessage]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [isDev]
-  );
-  const clearMessages = (0, import_react.useCallback)(() => {
-    setMessages([]);
-  }, []);
-  return {
-    messages,
-    isLoading,
-    ask,
-    clearMessages
-  };
-}
-
-// src/components/organisms/Widget/Widget.tsx
+var import_tailwind_merge = require("tailwind-merge");
 var import_jsx_runtime = require("react/jsx-runtime");
 function cn(...inputs) {
   return (0, import_tailwind_merge.twMerge)((0, import_clsx.clsx)(inputs));
@@ -181,9 +81,9 @@ var defaultIcons = {
   close: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.X, { className: "h-4 w-4" }),
   submit: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Send, { className: "w-4 h-4" })
 };
-var WidgetContext = (0, import_react2.createContext)(void 0);
+var WidgetContext = (0, import_react.createContext)(void 0);
 function useWidget() {
-  const context = (0, import_react2.useContext)(WidgetContext);
+  const context = (0, import_react.useContext)(WidgetContext);
   if (!context) {
     throw new Error("useWidget must be used within a Widget.Root");
   }
@@ -191,6 +91,9 @@ function useWidget() {
 }
 function Root2({
   children,
+  messages,
+  isProcessing,
+  onSendMessage,
   defaultOpen = false,
   theme = "light",
   colorTheme = "default",
@@ -200,18 +103,12 @@ function Root2({
   themeVariables,
   preventCloseOnOutsideClick,
   showOnlineStatus = true,
-  className,
-  config,
-  configDir,
-  initialData,
-  initialFiles,
-  isDev
+  className
 }) {
-  const [isOpen, setIsOpen] = (0, import_react2.useState)(defaultOpen);
-  const [isMaximized, setIsMaximized] = (0, import_react2.useState)(false);
-  const { messages, isLoading, ask } = useKnowledge({ config, configDir, initialData, initialFiles, isDev });
-  const mergedTexts = (0, import_react2.useMemo)(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts]);
-  const mergedIcons = (0, import_react2.useMemo)(() => ({ ...defaultIcons, ...icons }), [icons]);
+  const [isOpen, setIsOpen] = (0, import_react.useState)(defaultOpen);
+  const [isMaximized, setIsMaximized] = (0, import_react.useState)(false);
+  const mergedTexts = (0, import_react.useMemo)(() => ({ ...defaultTexts[uiLanguage], ...texts }), [uiLanguage, texts]);
+  const mergedIcons = (0, import_react.useMemo)(() => ({ ...defaultIcons, ...icons }), [icons]);
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
     WidgetContext.Provider,
@@ -230,8 +127,8 @@ function Root2({
         preventCloseOnOutsideClick,
         showOnlineStatus,
         messages,
-        isLoading,
-        sendMessage: ask
+        isProcessing,
+        onSendMessage
       },
       children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
         "div",
@@ -275,22 +172,22 @@ function Content2({ children, className }) {
     preventCloseOnOutsideClick,
     showOnlineStatus,
     messages,
-    isLoading,
-    sendMessage
+    isProcessing,
+    onSendMessage
   } = useWidget();
   const themeClass = colorTheme === "default" ? "" : `theme-${colorTheme}`;
-  const [inputValue, setInputValue] = (0, import_react2.useState)("");
-  const scrollRef = (0, import_react2.useRef)(null);
-  (0, import_react2.useEffect)(() => {
+  const [inputValue, setInputValue] = (0, import_react.useState)("");
+  const scrollRef = (0, import_react.useRef)(null);
+  (0, import_react.useEffect)(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
-  const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  }, [messages, isProcessing]);
+  const handleSend = () => {
+    if (!inputValue.trim() || isProcessing) return;
     const text = inputValue;
     setInputValue("");
-    await sendMessage(text);
+    onSendMessage(text);
   };
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -403,7 +300,7 @@ function Content2({ children, className }) {
                 },
                 i
               )),
-              isLoading && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-start gap-3 max-w-[85%] animate-pulse", children: [
+              isProcessing && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-start gap-3 max-w-[85%] animate-pulse", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Bot, { className: "h-4 w-4" }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-muted border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex gap-1", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce" }),
@@ -424,7 +321,7 @@ function Content2({ children, className }) {
                 onChange: (e) => setInputValue(e.target.value),
                 onKeyDown: handleKeyDown,
                 placeholder: texts.placeholder,
-                disabled: isLoading,
+                disabled: isProcessing,
                 className: "w-full bg-muted/50 hover:bg-muted border border-transparent focus:bg-background focus:border-primary rounded-full px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all pr-14 shadow-sm placeholder:text-muted-foreground disabled:opacity-50"
               }
             ),
@@ -433,7 +330,7 @@ function Content2({ children, className }) {
               {
                 type: "button",
                 onClick: handleSend,
-                disabled: !inputValue.trim() || isLoading,
+                disabled: !inputValue.trim() || isProcessing,
                 className: "absolute right-2 flex h-9 w-9 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:scale-100",
                 children: icons.submit
               }
@@ -452,7 +349,28 @@ var Widget = {
   Trigger: Trigger2,
   Content: Content2
 };
+
+// src/hooks/use-widget-messages.ts
+var import_react2 = require("react");
+function useWidgetMessages() {
+  const [messages, setMessages] = (0, import_react2.useState)([]);
+  const [isProcessing, setIsProcessing] = (0, import_react2.useState)(false);
+  const appendMessage = (0, import_react2.useCallback)((message) => {
+    setMessages((prev) => [...prev, { ...message, timestamp: /* @__PURE__ */ new Date() }]);
+  }, []);
+  const clearMessages = (0, import_react2.useCallback)(() => {
+    setMessages([]);
+  }, []);
+  return {
+    messages,
+    isProcessing,
+    setIsProcessing,
+    appendMessage,
+    clearMessages
+  };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Widget
+  Widget,
+  useWidgetMessages
 });
