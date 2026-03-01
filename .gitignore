@@ -42,3 +42,6 @@ coverage/
 
 # Misc
 Thumbs.db
+/packages/core/dist
+/packages/react/dist
+/apps/playground/dist
