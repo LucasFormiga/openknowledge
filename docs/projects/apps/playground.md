@@ -4,20 +4,21 @@ The `playground` app is a developer-facing tool for designing, configuring, and 
 
 ## 📁 Key Features
 - **UI & Design Playground**: Real-time control of themes, colors, and languages.
-- **Simulated Backend Flow**: Demonstrates the secure **Server-to-Client bridge**.
-- **Code Snippet Generation**: Automatically generates the correct React code for your design.
+- **Full SSR Backend Flow**: Demonstrates the secure **Server-to-Client bridge** using Express and Vite SSR. It connects to the actual `@openknowledge/core` on the backend.
+- **Code Snippet Generation**: Automatically generates the correct React code and JSON configs for your design.
 
 ## 🧩 Architectural Nuances
-- **No Local Markdown Reading**: To be production-ready, browser-side Markdown reading has been replaced with a simulation. The playground shows how a developer's host app would handle message flows and state.
-- **Controlled Interaction**: The playground uses `useWidgetMessages` to manage chat state, just as a developer would in a real application.
+- **Server-Side Agent Integration**: The playground runs an Express server (`server.ts`) which instantiates the OpenKnowledge core agent. It provides a `/api/chat` endpoint.
+- **Client-Side Widget**: The browser application renders the React Widget and communicates with the backend, accurately mimicking a real-world integration. 
+- **Controlled Interaction**: The playground uses `useWidgetMessages` to manage chat state locally before fetching from the backend.
 
-## 🛠 Simulated Flow
-In `App.tsx`, the `handleSendMessage` function simulates an API call:
-1. Adds the user message via `appendMessage`.
-2. Sets `setIsProcessing(true)`.
-3. Waits for a mock delay (simulating a backend/LLM call).
-4. Appends a simulated assistant response.
-5. Sets `setIsProcessing(false)`.
+## 🛠 Execution Flow
+1. User types in the widget.
+2. The client app adds the message to local state and sets `isProcessing(true)`.
+3. An actual HTTP POST is made to `/api/chat`.
+4. The Express backend uses `@openknowledge/core` to consult the LLM with the injected Markdown context.
+5. The result is returned to the client and appended to the widget.
+6. The client app sets `isProcessing(false)`.
 
 ---
-*The playground's primary goal is to help you design the UI and verify the integration flow without exposing any backend secrets.*
+*The playground's primary goal is to help you design the UI and verify the integration flow accurately with a real node server backend.*

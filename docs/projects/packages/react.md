@@ -36,13 +36,26 @@ export function Chat() {
 ```
 
 ## 🧩 Architectural Nuances
-- **No AI Logic in UI**: The widget does NOT know about API keys or LLM providers. It only receives `messages` and tells the host app when to send a new one.
-- **Secure by Default**: This pattern prevents exposing sensitive system prompts or keys to the user's browser.
+- **No AI Logic in UI**: The widget does NOT know about API keys or LLM providers. It only receives `messages` and delegates the actual communication to the host app.
+- **Secure by Default**: This pattern strictly prevents exposing sensitive system prompts or provider keys to the user's browser.
+- **Test-Driven UI**: The components and hooks are thoroughly tested using Vitest and React Testing Library.
+
+## 📐 Implementation Guidelines
+- **Avoid Barrel Files**: Import components directly (e.g., `import { Button } from './atoms/Button'`) to ensure optimal bundle performance and avoid circular imports.
+- **Atomic Design**: Structure components into `atoms`, `molecules`, and `organisms`.
+- **Vercel React Best Practices**: 
+  - Minimize waterfalls by parallelizing logic. 
+  - Ensure re-render optimization using `useMemo` and `useCallback` where appropriate.
+  - Avoid heavy dependencies in effects.
+- **Vercel Composition Patterns**:
+  - Use **Compound Components** (like `Widget.Root`, `Widget.Trigger`) to allow flexible layout assembly.
+  - **Avoid Boolean Props** for behavioral toggles; use child composition or explicit variant components instead.
 
 ## 🎨 Styling & Customization
-- The widget uses a **Compound Component** pattern (`Root`, `Trigger`, `Content`).
-- Theme presets: `'default' | 'rose' | 'emerald' | 'violet'`.
-- Fully customizable via CSS variables (HSL).
+- Uses a **Compound Component** pattern (`Root`, `Trigger`, `Content`).
+- Theme presets: `'default' | 'rose' | 'emerald' | 'violet'` with built-in Light and Dark modes.
+- Fully customizable via injected CSS variables.
+- The UI gracefully prevents closing when the user clicks outside if configured, and elegantly auto-scrolls when messages arrive.
 
 ---
-*When updating the UI, maintain the controlled component pattern to ensure security and flexibility for developers.*
+*When updating the UI, maintain the controlled component pattern to ensure security and run UI tests to verify regressions.*
