@@ -57,14 +57,15 @@ import { createAgent, parseEnv } from '@openknowledge/core';
 const agent = await createAgent(parseEnv(process.env), './agent-config');
 
 export async function POST(req, res) {
-  const { message } = req.body;
-  const response = await agent.ask(message);
+  // Pass the new message and the conversation history array for context
+  const { message, history } = req.body;
+  const response = await agent.ask(message, undefined, history);
   res.json({ text: response });
 }
 ```
 
 ### 2. Client-Side (React)
-Use the `@openknowledge/react` UI widget to interact with your secure endpoint:
+Use the `@openknowledge/react` UI widget to interact with your secure endpoint. The widget supports **Markdown parsing** out of the box and uses **Compound Components** for maximum flexibility:
 
 ```tsx
 import { Widget, useWidgetMessages } from '@openknowledge/react';
@@ -80,7 +81,10 @@ export default function ChatWidget() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text })
+        body: JSON.stringify({ 
+          message: text,
+          history: messages // Send history to maintain context
+        })
       });
       const data = await res.json();
       appendMessage({ role: 'assistant', content: data.text });
@@ -92,7 +96,11 @@ export default function ChatWidget() {
   return (
     <Widget.Root messages={messages} isProcessing={isProcessing} onSendMessage={handleSendMessage}>
       <Widget.Trigger />
-      <Widget.Content />
+      <Widget.Content>
+        <Widget.Header />
+        <Widget.Body />
+        <Widget.Footer />
+      </Widget.Content>
     </Widget.Root>
   );
 }
@@ -102,9 +110,9 @@ export default function ChatWidget() {
 
 We welcome contributions from the community! If you're looking to make your first PR, here are a few **Good First Issues** derived from our current roadmap:
 
-1. **Refactor `Widget.tsx` into Atomic Components**
-   - **Context:** Currently, `packages/react/src/components/organisms/Widget/Widget.tsx` is a large file containing the Root, Trigger, and Content implementations.
-   - **Task:** Refactor this using Atomic Design principles (extracting UI bits into `atoms` and `molecules`) while adhering to Vercel Composition Patterns (avoiding barrel files).
+1. **Add Vector Database/RAG Support Example**
+   - **Context:** The core agent currently loads `.md` files directly from the file system, which is great for small configurations.
+   - **Task:** Create a new example in `packages/core/examples` demonstrating how to connect the `KnowledgeRouter` (or `AgentInstance`) to a Vector Database like Pinecone, Supabase Vector, or similar using the manual initialization flow.
 
 2. **Expand AI Provider Support in `@openknowledge/core`**
    - **Context:** The core package currently supports `openai`, `anthropic`, and `gemini` via `@tanstack/ai`. 
