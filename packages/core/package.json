@@ -1,9 +1,10 @@
 {
-  "name": "@openknowledge/core",
+  "name": "@lucasformiga/openknowledge-core",
   "version": "1.0.0-beta.1",
   "description": "Core routing and LLM logic for OpenKnowledge AI agents.",
-  "author": "OpenKnowledge",
+  "author": "Lucas Formiga",
   "license": "MIT",
+  "homepage": "https://github.com/lucasformiga/openknowledge",
   "repository": {
     "type": "git",
     "url": "https://github.com/lucasformiga/openknowledge.git"

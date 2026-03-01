@@ -1,5 +1,5 @@
 {
-  "name": "@openknowledge/react",
+  "name": "@lucasformiga/openknowledge-react",
   "version": "0.0.1",
   "description": "Customizable React chat widget for OpenKnowledge AI agents.",
   "author": "OpenKnowledge",

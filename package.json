@@ -1,5 +1,7 @@
 {
-  "name": "openknowledge-monorepo",
+  "name": "@lucasformiga/openknowledge-monorepo",
+  "author": "Lucas Formiga",
+  "homepage": "https://github.com/lucasformiga/openknowledge",
   "private": true,
   "workspaces": [
     "apps/*",

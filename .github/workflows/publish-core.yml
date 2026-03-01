@@ -1,19 +1,19 @@
-name: Publish @openknowledge/core
+name: Publish @lucasformiga/openknowledge-core
 
 on:
   workflow_dispatch:
     inputs:
       bump:
-        description: 'Version bump type (ignored if version is provided)'
+        description: "Version bump type (ignored if version is provided)"
         required: true
-        default: 'patch'
+        default: "patch"
         type: choice
         options:
           - patch
           - minor
           - major
       version:
-        description: 'Hardcoded version (e.g., 1.0.0-beta.1)'
+        description: "Hardcoded version (e.g., 1.0.0-beta.1)"
         required: false
         type: string
 
@@ -30,17 +30,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build
-        run: npx turbo run build --filter=@openknowledge/core
+        run: npx turbo run build --filter=@lucasformiga/openknowledge-core
 
       - name: Test
-        run: npx turbo run test --filter=@openknowledge/core
+        run: npx turbo run test --filter=@lucasformiga/openknowledge-core
 
       - name: Configure Git
         run: |
@@ -69,7 +69,7 @@ jobs:
           VERSION=$(node -p "require('./packages/core/package.json').version")
           gh release create "core-v$VERSION" \
             --title "core v$VERSION" \
-            --notes "Release @openknowledge/core version $VERSION" \
+            --notes "Release @lucasformiga/openknowledge-core version $VERSION" \
             --target ${{ github.ref_name }} \
             --generate-notes
 
