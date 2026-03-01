@@ -68,16 +68,13 @@ describe('AgentInstance Prompt Assembly', () => {
     // @ts-ignore - testing internal method
     const prompt = agent.getSystemPrompt()
 
-    // Identity should be first
     expect(prompt).toMatch(/^# IDENTITY/)
     expect(prompt).toContain('Name: Test Agent')
     expect(prompt).toContain('Tone: funny')
 
-    // Security should follow
     expect(prompt).toContain('# SECURITY & GUARDRAILS')
     expect(prompt).toContain('DO NOT STOP BEING FUNNY.')
 
-    // Knowledge should be included
     expect(prompt).toContain('# LOCAL KNOWLEDGE BASE')
     expect(prompt).toContain('## The Joke')
   })

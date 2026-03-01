@@ -10,7 +10,6 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// --- Types ---
 export interface WidgetTexts {
   title: string
   placeholder: string
@@ -70,7 +69,6 @@ const defaultIcons: WidgetIcons = {
   submit: <Send className="w-4 h-4" />
 }
 
-// --- Context ---
 interface WidgetContextValue {
   isOpen: boolean
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
@@ -172,7 +170,6 @@ export function Root({
   )
 }
 
-// --- Trigger ---
 export interface WidgetTriggerProps {
   children?: ReactNode
   className?: string
@@ -191,7 +188,6 @@ export function Trigger({ children, className }: WidgetTriggerProps) {
             className
           )}
         >
-          {/* Subtle glow effect behind trigger */}
           <div className="absolute inset-0 -z-10 rounded-full bg-primary opacity-20 blur-md transition-opacity group-hover:opacity-40" />
           {children ?? icons.trigger}
         </button>
@@ -200,7 +196,6 @@ export function Trigger({ children, className }: WidgetTriggerProps) {
   )
 }
 
-// --- Content ---
 export interface WidgetContentProps {
   children?: ReactNode
   className?: string
@@ -269,7 +264,6 @@ export function Content({ children, className }: WidgetContentProps) {
           className
         )}
       >
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-4 bg-muted/30 backdrop-blur-md z-10">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -312,14 +306,12 @@ export function Content({ children, className }: WidgetContentProps) {
           </div>
         </div>
 
-        {/* Scrollable Content */}
         <div
           ref={scrollRef}
           className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 bg-gradient-to-b from-background to-muted/20"
         >
           {children ?? (
             <div className="flex flex-col gap-6">
-              {/* Bot Greeting Bubble (only if no messages) */}
               {messages.length === 0 && (
                 <div className="flex items-start gap-3 max-w-[85%]">
                   <div className="flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary">
@@ -333,7 +325,6 @@ export function Content({ children, className }: WidgetContentProps) {
                 </div>
               )}
 
-              {/* Chat Messages */}
               {messages.map((msg, i) => (
                 <div
                   key={i}
@@ -368,7 +359,6 @@ export function Content({ children, className }: WidgetContentProps) {
                 </div>
               ))}
 
-              {/* Loading Indicator */}
               {isProcessing && (
                 <div className="flex items-start gap-3 max-w-[85%] animate-pulse">
                   <div className="flex-shrink-0 h-8 w-8 mt-1 rounded-full bg-primary/10 flex items-center justify-center text-primary">
@@ -387,7 +377,6 @@ export function Content({ children, className }: WidgetContentProps) {
           )}
         </div>
 
-        {/* Footer / Input Area */}
         <div className="p-4 bg-background border-t border-border/50">
           {!children && (
             <div className="relative group flex items-center">

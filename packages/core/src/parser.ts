@@ -25,9 +25,7 @@ export function extractMarkdownSections(content: string): Map<string, string> {
       continue
     }
 
-    if (currentSection || sections.has('title')) {
-      currentContent.push(line)
-    }
+    currentContent.push(line)
   }
 
   if (currentSection) {
@@ -36,13 +34,11 @@ export function extractMarkdownSections(content: string): Map<string, string> {
   }
 
   if (sections.has('title') && currentContent.length > 0) {
-    // If we have a title but no subheadings, the content belongs to 'content' or 'instructions'
     sections.set('content', currentContent.join('\n').trim())
     return sections
   }
 
   if (currentContent.length > 0) {
-    // If no headings found at all, treat the whole thing as content
     sections.set('content', currentContent.join('\n').trim())
   }
 

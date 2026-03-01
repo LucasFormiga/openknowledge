@@ -4,7 +4,6 @@
 
 @layer base {
   :root {
-    /* Default Zinc Theme */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -24,11 +23,10 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
-    --radius: 1rem; /* Softer, larger radius for modern look */
+    --radius: 1rem;
   }
 
   .dark {
-    /* Default Zinc Dark */
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
@@ -52,11 +50,6 @@
 }
 
 @layer components {
-  /* High-specificity theme overrides */
-
-  /* =========================================
-     Rose Theme
-     ========================================= */
   .openknowledge-widget.theme-rose {
     --background: 355 100% 99%;
     --foreground: 350 30% 15%;
@@ -96,9 +89,6 @@
     --ring: 346.8 77.2% 55%;
   }
 
-  /* =========================================
-     Emerald Theme
-     ========================================= */
   .openknowledge-widget.theme-emerald {
     --background: 150 60% 99%;
     --foreground: 150 30% 15%;
@@ -138,9 +128,6 @@
     --ring: 142.1 70.6% 45.3%;
   }
 
-  /* =========================================
-     Violet Theme
-     ========================================= */
   .openknowledge-widget.theme-violet {
     --background: 260 60% 99%;
     --foreground: 260 30% 15%;

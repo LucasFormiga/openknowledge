@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+node_modules
 
 # Build outputs
 dist/
@@ -7,6 +8,7 @@ dist-ssr/
 build/
 out/
 .turbo/
+.turbo
 *.tsbuildinfo
 
 # Logs
@@ -45,3 +47,5 @@ Thumbs.db
 /packages/core/dist
 /packages/react/dist
 /apps/playground/dist
+/packages/core/.turbo
+/packages/core/node_modules
