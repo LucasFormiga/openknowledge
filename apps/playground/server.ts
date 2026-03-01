@@ -13,15 +13,7 @@ async function startServer() {
   const app = express()
   app.use(express.json())
 
-  const config = parseEnv({
-    AI_PROVIDER: process.env.AI_PROVIDER,
-    AI_MODEL: process.env.AI_MODEL,
-    ...(process.env.OPENAI_API_KEY && { OPENAI_API_KEY: process.env.OPENAI_API_KEY }),
-    ...(process.env.GEMINI_API_KEY && { GEMINI_API_KEY: process.env.GEMINI_API_KEY }),
-    ...(process.env.ANTHROPIC_API_KEY && { ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY }),
-    DEFAULT_LANGUAGE: process.env.DEFAULT_LANGUAGE,
-    AI_TONE: process.env.AI_TONE
-  })
+  const config = parseEnv(process.env)
 
   const agentConfigDir = path.resolve(__dirname, 'src/agent')
   const agent = await createAgent(config, agentConfigDir)
