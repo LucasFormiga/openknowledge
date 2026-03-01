@@ -29,13 +29,13 @@ async function startServer() {
   // API Endpoint
   app.post('/api/chat', async (req, res) => {
     try {
-      const { message } = req.body
+      const { message, history } = req.body
       if (!message) {
         return res.status(400).json({ error: 'Message is required' })
       }
 
       console.log('Agent is thinking about:', message)
-      const response = await agent.ask(message)
+      const response = await agent.ask(message, undefined, history)
       res.json({ text: response })
     } catch (error) {
       console.error('Error in /api/chat:', error)

@@ -1,0 +1,79 @@
+name: Publish @openknowledge/core
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type (ignored if version is provided)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      version:
+        description: 'Hardcoded version (e.g., 1.0.0-beta.1)'
+        required: false
+        type: string
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npx turbo run build --filter=@openknowledge/core
+
+      - name: Test
+        run: npx turbo run test --filter=@openknowledge/core
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump Version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            npm version ${{ github.event.inputs.version }} --workspace=packages/core --no-git-tag-version
+          else
+            npm version ${{ github.event.inputs.bump }} --workspace=packages/core --no-git-tag-version
+          fi
+
+      - name: Commit and Push Version Bump
+        run: |
+          git add packages/core/package.json
+          VERSION=$(node -p "require('./packages/core/package.json').version")
+          git commit -m "chore(core): bump version to $VERSION"
+          git push origin HEAD:${{ github.ref }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./packages/core/package.json').version")
+          gh release create "core-v$VERSION" \
+            --title "core v$VERSION" \
+            --notes "Release @openknowledge/core version $VERSION" \
+            --target ${{ github.ref_name }} \
+            --generate-notes
+
+      - name: Publish to NPM
+        run: npm publish --workspace=packages/core --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

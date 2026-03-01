@@ -11,7 +11,8 @@
     "test": "turbo run test",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "check": "biome check . --fix"
+    "check": "biome check . --fix",
+    "pretest": "npm run check"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",

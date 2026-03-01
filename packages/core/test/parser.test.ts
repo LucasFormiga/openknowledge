@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { parseIdentityMarkdown, parseSecurityMarkdown, parseKnowledgeMarkdown, parseSkillMarkdown, extractMarkdownSections } from '../src/parser.js'
+import {
+  extractMarkdownSections,
+  parseIdentityMarkdown,
+  parseKnowledgeMarkdown,
+  parseSecurityMarkdown,
+  parseSkillMarkdown
+} from '../src/parser.js'
 
 describe('Parser - extractMarkdownSections', () => {
   it('should extract sections correctly', () => {

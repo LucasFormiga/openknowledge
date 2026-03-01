@@ -1,10 +1,45 @@
 {
   "name": "@openknowledge/core",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.0.1",
+  "description": "Core routing and LLM logic for OpenKnowledge AI agents.",
+  "author": "OpenKnowledge",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucasformiga/openknowledge.git"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "llm",
+    "knowledge",
+    "router",
+    "open source",
+    "open-source",
+    "opensource"
+  ],
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",

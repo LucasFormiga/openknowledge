@@ -33,6 +33,7 @@ function App() {
   const [customTitle, setCustomTitle] = useState('')
   const [customSupportText, setCustomSupportText] = useState('')
   const [customGreeting, setCustomGreeting] = useState('')
+  const [useHistory, setUseHistory] = useState(true)
 
   const [copiedReact, setCopiedReact] = useState(false)
   const [copiedJson, setCopiedJson] = useState(false)
@@ -58,7 +59,10 @@ function App() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ message: text })
+        body: JSON.stringify({
+          message: text,
+          history: useHistory ? messages : []
+        })
       })
 
       if (!response.ok) {
@@ -96,6 +100,7 @@ function App() {
     setCustomTitle('')
     setCustomSupportText('')
     setCustomGreeting('')
+    setUseHistory(true)
     setJsonImportText('')
     setJsonError('')
   }
@@ -146,7 +151,10 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ message: text })
+        body: JSON.stringify({ 
+          message: text,
+          ${useHistory ? 'history: messages' : 'history: []'} 
+        })
       }).then(res => res.json());
 
       appendMessage({ role: 'assistant', content: response.text });
@@ -161,7 +169,11 @@ export default function App() {
       isProcessing={isProcessing}
       onSendMessage={handleSendMessage}${propsString}>
       <Widget.Trigger />
-      <Widget.Content />
+      <Widget.Content>
+        <Widget.Header />
+        <Widget.Body />
+        <Widget.Footer />
+      </Widget.Content>
     </Widget.Root>
   );
 }`
@@ -177,7 +189,8 @@ export default function App() {
         customPrimaryColor,
         customTitle,
         customGreeting,
-        customSupportText
+        customSupportText,
+        useHistory
       },
       null,
       2
@@ -206,6 +219,7 @@ export default function App() {
       if (parsed.customTitle !== undefined) setCustomTitle(parsed.customTitle)
       if (parsed.customGreeting !== undefined) setCustomGreeting(parsed.customGreeting)
       if (parsed.customSupportText !== undefined) setCustomSupportText(parsed.customSupportText)
+      if (parsed.useHistory !== undefined) setUseHistory(parsed.useHistory)
       setJsonError('')
       // Update the textarea to reflect the applied config formatting
       setJsonImportText(JSON.stringify(parsed, null, 2))
@@ -337,6 +351,32 @@ export default function App() {
                       <span className="w-2 h-2 rounded-full bg-emerald-500" /> Custom color active
                     </p>
                   )}
+                </div>
+              </section>
+
+              {/* Agent Settings Section */}
+              <section className="space-y-5">
+                <div className="flex items-center gap-2 text-foreground pb-2 border-b border-border/50">
+                  <Settings2 className="w-4 h-4 text-primary" />
+                  <h2 className="text-sm font-semibold uppercase tracking-wider">Agent Settings</h2>
+                </div>
+
+                {/* History Toggle */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+                    Enable Chat History
+                    <button
+                      onClick={() => setUseHistory(!useHistory)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${useHistory ? 'bg-primary' : 'bg-muted'}`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${useHistory ? 'translate-x-6' : 'translate-x-1'}`}
+                      />
+                    </button>
+                  </label>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    If disabled, the AI will only receive the current message without the context of the conversation.
+                  </p>
                 </div>
               </section>
 
@@ -522,7 +562,11 @@ export default function App() {
         }}
       >
         <Widget.Trigger />
-        <Widget.Content />
+        <Widget.Content>
+          <Widget.Header />
+          <Widget.Body />
+          <Widget.Footer />
+        </Widget.Content>
       </Widget.Root>
     </div>
   )

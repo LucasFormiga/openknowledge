@@ -28,6 +28,11 @@ export interface SkillInfo {
   resources: string[]
 }
 
+export interface Message {
+  role: 'user' | 'assistant'
+  content: string
+}
+
 export interface LoaderResult {
   identity?: AgentIdentity
   security?: SecurityGuard

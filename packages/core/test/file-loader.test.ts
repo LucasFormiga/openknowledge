@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FileSystemKnowledgeLoader } from '../src/infrastructure/file-loader.js'
 
 vi.mock('node:fs/promises')
@@ -59,10 +59,10 @@ describe('FileSystemKnowledgeLoader', () => {
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const result = await loader.loadFromDir('error-dir')
-    
+
     expect(consoleSpy).toHaveBeenCalledWith('Error loading configuration from error-dir:', expect.any(Error))
     expect(result).toEqual({})
-    
+
     consoleSpy.mockRestore()
   })
 

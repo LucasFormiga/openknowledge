@@ -65,7 +65,7 @@ describe('AgentInstance Prompt Assembly', () => {
       knowledge
     })
 
-    // @ts-ignore - testing internal method
+    // @ts-expect-error - testing internal method
     const prompt = agent.getSystemPrompt()
 
     expect(prompt).toMatch(/^# IDENTITY/)

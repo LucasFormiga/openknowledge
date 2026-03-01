@@ -3,7 +3,7 @@ import { createAnthropicChat } from '@tanstack/ai-anthropic'
 import { createGeminiChat } from '@tanstack/ai-gemini'
 import { createOpenaiChat } from '@tanstack/ai-openai'
 import type { Config } from './config.js'
-import type { AgentIdentity, KnowledgeBase, SecurityGuard, SkillInfo } from './domain/types.js'
+import type { AgentIdentity, KnowledgeBase, Message, SecurityGuard, SkillInfo } from './domain/types.js'
 import { FileSystemKnowledgeLoader } from './infrastructure/file-loader.js'
 
 export interface AgentOptions {
@@ -106,16 +106,13 @@ export class AgentInstance {
     }
   }
 
-  async ask(question: string, apiKey?: string): Promise<string> {
+  async ask(question: string, apiKey?: string, history?: Message[]): Promise<string> {
     const prompt = this.getSystemPrompt()
     const adapter = this.getAdapter(apiKey)
 
     const result = await chat({
       adapter,
-      messages: [
-        { role: 'assistant', content: prompt },
-        { role: 'user', content: question }
-      ],
+      messages: [{ role: 'assistant', content: prompt }, ...(history || []), { role: 'user', content: question }],
       stream: false
     })
 
@@ -140,6 +137,6 @@ export async function createAgent(config: Config, configDir: string) {
   })
 
   return {
-    ask: (question: string, apiKey?: string) => instance.ask(question, apiKey)
+    ask: (question: string, apiKey?: string, history?: Message[]) => instance.ask(question, apiKey, history)
   }
 }

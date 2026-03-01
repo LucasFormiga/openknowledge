@@ -2,6 +2,23 @@ import * as react_jsx_runtime from 'react/jsx-runtime';
 import * as React from 'react';
 import React__default, { ReactNode } from 'react';
 
+interface StatusIndicatorProps {
+    className?: string;
+    label?: string;
+}
+declare function StatusIndicator({ className, label }: StatusIndicatorProps): react_jsx_runtime.JSX.Element;
+
+interface WidgetFooterProps {
+    children?: React__default.ReactNode;
+    className?: string;
+}
+declare function WidgetFooter({ children, className }: WidgetFooterProps): react_jsx_runtime.JSX.Element;
+
+interface WidgetHeaderProps {
+    className?: string;
+}
+declare function WidgetHeader({ className }: WidgetHeaderProps): react_jsx_runtime.JSX.Element;
+
 interface Message {
     role: 'user' | 'assistant';
     content: string;
@@ -38,6 +55,25 @@ interface WidgetIcons {
 }
 type UILanguage = 'pt-BR' | 'en' | 'es';
 type ColorTheme = 'default' | 'rose' | 'emerald' | 'violet';
+interface WidgetContextValue {
+    isOpen: boolean;
+    setIsOpen: React__default.Dispatch<React__default.SetStateAction<boolean>>;
+    isMaximized: boolean;
+    setIsMaximized: React__default.Dispatch<React__default.SetStateAction<boolean>>;
+    theme: 'light' | 'dark';
+    colorTheme: ColorTheme;
+    themeVariables?: React__default.CSSProperties;
+    uiLanguage: UILanguage;
+    texts: WidgetTexts;
+    icons: WidgetIcons;
+    preventCloseOnOutsideClick?: boolean;
+    showOnlineStatus?: boolean;
+    messages: Message[];
+    isProcessing: boolean;
+    onSendMessage: (text: string) => void;
+}
+declare function useWidget(): WidgetContextValue;
+
 interface WidgetRootProps {
     children: ReactNode;
     messages: Message[];
@@ -66,10 +102,20 @@ interface WidgetContentProps {
 }
 declare function Content({ children, className }: WidgetContentProps): react_jsx_runtime.JSX.Element;
 
+interface WidgetBodyProps {
+    children?: React__default.ReactNode;
+    className?: string;
+}
+declare function WidgetBody({ children, className }: WidgetBodyProps): react_jsx_runtime.JSX.Element;
+
 declare const Widget: {
     Root: typeof Root;
     Trigger: typeof Trigger;
     Content: typeof Content;
+    Header: typeof WidgetHeader;
+    Body: typeof WidgetBody;
+    Footer: typeof WidgetFooter;
+    Status: typeof StatusIndicator;
 };
 
-export { type Message, Widget, useWidgetMessages };
+export { type ColorTheme, type Message, type UILanguage, Widget, type WidgetIcons, type WidgetTexts, useWidget, useWidgetMessages };

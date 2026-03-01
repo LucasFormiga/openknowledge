@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { Widget } from '../src/components/organisms/Widget'
+import { Widget } from '../src/index.js'
 
 describe('Widget', () => {
   it('should render trigger and open content on click', () => {

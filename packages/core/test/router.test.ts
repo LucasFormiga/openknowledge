@@ -1,7 +1,6 @@
+import * as aiCore from '@tanstack/ai'
 import { describe, expect, it, vi } from 'vitest'
 import { AgentInstance, createAgent } from '../src/router.js'
-import { FileSystemKnowledgeLoader } from '../src/infrastructure/file-loader.js'
-import * as aiCore from '@tanstack/ai'
 
 vi.mock('@tanstack/ai', () => ({
   chat: vi.fn()
@@ -72,7 +71,7 @@ describe('AgentInstance', () => {
 
     agent = new AgentInstance({ config: { ...baseConfig, AI_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'key' } })
     expect(() => (agent as any).getAdapter()).not.toThrow()
-    
+
     agent = new AgentInstance({ config: { ...baseConfig, AI_PROVIDER: 'unknown' as any, GEMINI_API_KEY: 'key' } })
     expect(() => (agent as any).getAdapter()).toThrow('Unsupported AI provider: unknown')
   })
@@ -90,6 +89,28 @@ describe('AgentInstance', () => {
     expect(response).toBe('Mocked response')
     expect(aiCore.chat).toHaveBeenCalled()
   })
+
+  it('should include history in messages array when asking a question', async () => {
+    const agent = new AgentInstance({ config: baseConfig })
+    vi.mocked(aiCore.chat).mockResolvedValue('Mocked response with history')
+
+    const history: any[] = [
+      { role: 'user', content: 'Hi before' },
+      { role: 'assistant', content: 'Hello before' }
+    ]
+    await agent.ask('Hello again', undefined, history)
+
+    expect(aiCore.chat).toHaveBeenCalledWith(
+      expect.objectContaining({
+        messages: [
+          expect.objectContaining({ role: 'assistant' }),
+          { role: 'user', content: 'Hi before' },
+          { role: 'assistant', content: 'Hello before' },
+          { role: 'user', content: 'Hello again' }
+        ]
+      })
+    )
+  })
 })
 
 describe('createAgent', () => {
@@ -104,7 +125,7 @@ describe('createAgent', () => {
 
     const agent = await createAgent(config, 'mock-dir')
     expect(agent).toHaveProperty('ask')
-    
+
     vi.mocked(aiCore.chat).mockResolvedValue('Response from createAgent')
     const response = await agent.ask('Hello')
     expect(response).toBe('Response from createAgent')
