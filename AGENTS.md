@@ -14,8 +14,8 @@ We use a Turbo-powered monorepo with the following components:
 
 ## 🛡️ Security First Architecture
 To prevent API key exposure and prompt manipulation, **OpenKnowledge** uses a Server-to-Client bridge:
-1.  **Server-Side**: The backend (e.g., Express) uses `@openknowledge/core` to load configs and talk to LLMs securely.
-2.  **Client-Side**: The frontend uses `@openknowledge/react` to display the widget, but does NOT contain API keys or sensitive logic.
+1.  **Server-Side**: The backend (e.g., Express) uses `@lucasformiga/openknowledge-core` to load configs and talk to LLMs securely.
+2.  **Client-Side**: The frontend uses `@lucasformiga/openknowledge-react` to display the widget, but does NOT contain API keys or sensitive logic.
 
 ## 🛠 Shared Guidelines & Standards
 - **Runtime**: Node.js (Core & Playground Server) / Browser (React & Playground Client).

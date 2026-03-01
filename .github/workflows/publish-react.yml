@@ -1,4 +1,4 @@
-name: Publish @lucasformiga/openknowledge-react
+name: Publish react package
 
 on:
   workflow_dispatch:

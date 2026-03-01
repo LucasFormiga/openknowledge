@@ -1,4 +1,4 @@
-name: Publish @lucasformiga/openknowledge-core
+name: Publish core package
 
 on:
   workflow_dispatch:

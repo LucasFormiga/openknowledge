@@ -1,4 +1,4 @@
-# 🧠 OpenKnowledge - Core Package (`@openknowledge/core`)
+# 🧠 OpenKnowledge - Core Package (`@lucasformiga/openknowledge-core`)
 
 The `core` package is a **Node.js-only** engine for loading, parsing, and executing AI-powered interactions.
 
@@ -6,7 +6,7 @@ The `core` package is a **Node.js-only** engine for loading, parsing, and execut
 The primary interaction point is the `createAgent` factory:
 
 ```typescript
-import { createAgent, parseEnv } from '@openknowledge/core';
+import { createAgent, parseEnv } from '@lucasformiga/openknowledge-core';
 
 // 1. Initialize the agent (loads config from directory)
 const agent = await createAgent(parseEnv(process.env), './agent-config');

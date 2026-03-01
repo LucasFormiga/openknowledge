@@ -1,4 +1,4 @@
-# ⚛️ OpenKnowledge - React Package (`@openknowledge/react`)
+# ⚛️ OpenKnowledge - React Package (`@lucasformiga/openknowledge-react`)
 
 The `react` package is a **UI-only** library that provides a high-quality, **controlled** chat widget.
 
@@ -6,7 +6,7 @@ The `react` package is a **UI-only** library that provides a high-quality, **con
 To manage state easily, the package provides a simple hook:
 
 ```tsx
-import { Widget, useWidgetMessages } from '@openknowledge/react';
+import { Widget, useWidgetMessages } from '@lucasformiga/openknowledge-react';
 
 export function Chat() {
   const { messages, isProcessing, appendMessage, setIsProcessing } = useWidgetMessages();

@@ -1,4 +1,4 @@
-import { useWidgetMessages, Widget } from '@openknowledge/react'
+import { useWidgetMessages, Widget } from '@lucasformiga/openknowledge-react'
 import {
   Check,
   Code2,
@@ -135,7 +135,7 @@ function App() {
 
     const propsString = props.length > 0 ? `\n      ${props.join('\n      ')}\n    ` : ' '
 
-    return `import { Widget, useWidgetMessages } from '@openknowledge/react';
+    return `import { Widget, useWidgetMessages } from '@lucasformiga/openknowledge-react';
 
 export default function App() {
   const { messages, isProcessing, appendMessage, setIsProcessing } = useWidgetMessages();
@@ -151,9 +151,9 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           message: text,
-          ${useHistory ? 'history: messages' : 'history: []'} 
+          ${useHistory ? 'history: messages' : 'history: []'}
         })
       }).then(res => res.json());
 
