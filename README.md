@@ -22,7 +22,7 @@ We use a Turbo-powered monorepo consisting of:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-org/openknowledge.git
+   git clone https://github.com/lucasformiga/openknowledge.git
    cd openknowledge
    ```
 
@@ -48,10 +48,10 @@ We use a Turbo-powered monorepo consisting of:
 The OpenKnowledge architecture strictly enforces a **Server-to-Client bridge** to protect API keys.
 
 ### 1. Server-Side (e.g. Next.js Route Handler, Express, etc.)
-Create your agent using `@lucasformiga/openknowledge-core` and expose an endpoint:
+Create your agent using `@miolab/openknowledge-core` and expose an endpoint:
 
 ```typescript
-import { createAgent, parseEnv } from '@lucasformiga/openknowledge-core';
+import { createAgent, parseEnv } from '@miolab/openknowledge-core';
 
 // Automatically loads behavior.md, security.md, and knowledge/*.md from the directory
 const agent = await createAgent(parseEnv(process.env), './agent-config');
@@ -65,10 +65,10 @@ export async function POST(req, res) {
 ```
 
 ### 2. Client-Side (React)
-Use the `@lucasformiga/openknowledge-react` UI widget to interact with your secure endpoint. The widget supports **Markdown parsing** out of the box and uses **Compound Components** for maximum flexibility:
+Use the `@miolab/openknowledge-react` UI widget to interact with your secure endpoint. The widget supports **Markdown parsing** out of the box and uses **Compound Components** for maximum flexibility:
 
 ```tsx
-import { Widget, useWidgetMessages } from '@lucasformiga/openknowledge-react';
+import { Widget, useWidgetMessages } from '@miolab/openknowledge-react';
 
 export default function ChatWidget() {
   const { messages, isProcessing, appendMessage, setIsProcessing } = useWidgetMessages();
@@ -114,7 +114,7 @@ We welcome contributions from the community! If you're looking to make your firs
    - **Context:** The core agent currently loads `.md` files directly from the file system, which is great for small configurations.
    - **Task:** Create a new example in `packages/core/examples` demonstrating how to connect the `KnowledgeRouter` (or `AgentInstance`) to a Vector Database like Pinecone, Supabase Vector, or similar using the manual initialization flow.
 
-2. **Expand AI Provider Support in `@lucasformiga/openknowledge-core`**
+2. **Expand AI Provider Support in `@miolab/openknowledge-core`**
    - **Context:** The core package currently supports `openai`, `anthropic`, and `gemini` via `@tanstack/ai`. 
    - **Task:** Add support for a new provider (e.g., Groq, DeepSeek, or Mistral). You will need to update `config.ts`, `router.ts`, and write covering Vitest tests.
 

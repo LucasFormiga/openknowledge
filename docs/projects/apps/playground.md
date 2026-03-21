@@ -4,7 +4,7 @@ The `playground` app is a developer-facing tool for designing, configuring, and 
 
 ## 📁 Key Features
 - **UI & Design Playground**: Real-time control of themes, colors, and languages.
-- **Full SSR Backend Flow**: Demonstrates the secure **Server-to-Client bridge** using Express and Vite SSR. It connects to the actual `@lucasformiga/openknowledge-core` on the backend.
+- **Full SSR Backend Flow**: Demonstrates the secure **Server-to-Client bridge** using Express and Vite SSR. It connects to the actual `@miolab/openknowledge-core` on the backend.
 - **Code Snippet Generation**: Automatically generates the correct React code and JSON configs for your design.
 
 ## 🧩 Architectural Nuances
@@ -16,7 +16,7 @@ The `playground` app is a developer-facing tool for designing, configuring, and 
 1. User types in the widget.
 2. The client app adds the message to local state and sets `isProcessing(true)`.
 3. An actual HTTP POST is made to `/api/chat`.
-4. The Express backend uses `@lucasformiga/openknowledge-core` to consult the LLM with the injected Markdown context.
+4. The Express backend uses `@miolab/openknowledge-core` to consult the LLM with the injected Markdown context.
 5. The result is returned to the client and appended to the widget.
 6. The client app sets `isProcessing(false)`.
 

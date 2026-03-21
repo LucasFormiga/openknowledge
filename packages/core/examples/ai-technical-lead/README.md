@@ -1,6 +1,6 @@
 # OpenKnowledge Example Configuration
 
-This directory contains example Markdown files to configure your AI agent using `@lucasformiga/openknowledge-core`.
+This directory contains example Markdown files to configure your AI agent using `@miolab/openknowledge-core`.
 
 ## Directory Structure
 ```
@@ -21,7 +21,7 @@ agent-config/
    Use the `KnowledgeRouter.fromDir()` static method to automatically load all configurations.
 
 ```typescript
-import { parseEnv, KnowledgeRouter } from '@lucasformiga/openknowledge-core';
+import { parseEnv, KnowledgeRouter } from '@miolab/openknowledge-core';
 
 // 1. Parse your environment variables
 const config = parseEnv(process.env);
@@ -45,7 +45,7 @@ console.log(response);
 For external data (e.g., from Pinecone, Supabase, or a custom API), you can fetch the data manually and pass it to the `KnowledgeRouter` constructor:
 
 ```typescript
-import { KnowledgeRouter } from '@lucasformiga/openknowledge-core';
+import { KnowledgeRouter } from '@miolab/openknowledge-core';
 
 // 1. Fetch from your external source (Vector DB, CMS, etc.)
 const externalSources = await myDatabase.getKnowledge("my-query");

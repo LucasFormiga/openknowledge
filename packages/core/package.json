@@ -1,5 +1,5 @@
 {
-  "name": "@lucasformiga/openknowledge-core",
+  "name": "@miolab/openknowledge-core",
   "version": "1.0.0-beta.2",
   "description": "Core routing and LLM logic for OpenKnowledge AI agents.",
   "author": "Lucas Formiga",

@@ -2,7 +2,7 @@ import 'dotenv/config'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createAgent, parseEnv } from '@lucasformiga/openknowledge-core'
+import { createAgent, parseEnv } from '@miolab/openknowledge-core'
 import express from 'express'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

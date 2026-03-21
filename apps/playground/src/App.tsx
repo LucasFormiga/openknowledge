@@ -1,4 +1,4 @@
-import { useWidgetMessages, Widget } from '@lucasformiga/openknowledge-react'
+import { useWidgetMessages, Widget } from '@miolab/openknowledge-react'
 import {
   Check,
   Code2,
@@ -135,7 +135,7 @@ function App() {
 
     const propsString = props.length > 0 ? `\n      ${props.join('\n      ')}\n    ` : ' '
 
-    return `import { Widget, useWidgetMessages } from '@lucasformiga/openknowledge-react';
+    return `import { Widget, useWidgetMessages } from '@miolab/openknowledge-react';
 
 export default function App() {
   const { messages, isProcessing, appendMessage, setIsProcessing } = useWidgetMessages();
