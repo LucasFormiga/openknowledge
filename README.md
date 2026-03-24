@@ -1,5 +1,11 @@
 # 🤖 OpenKnowledge
 
+[![npm version](https://img.shields.io/npm/v/@miolab/openknowledge-core?label=%40miolab%2Fopenknowledge-core&logo=npm&color=cb3837)](https://www.npmjs.com/package/@miolab/openknowledge-core)
+[![npm version](https://img.shields.io/npm/v/@miolab/openknowledge-react?label=%40miolab%2Fopenknowledge-react&logo=npm&color=cb3837)](https://www.npmjs.com/package/@miolab/openknowledge-react)
+[![Node.js](https://img.shields.io/badge/node-22-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Core Coverage](https://img.shields.io/badge/core%20coverage-100%25-brightgreen)](./packages/core)
+[![React Coverage](https://img.shields.io/badge/react%20coverage-95%25-green)](./packages/react)
+
 OpenKnowledge is an open-source toolkit designed to drastically simplify the process of creating, configuring, and deploying an AI chatbot linked to a specialized knowledge base. 
 
 By leveraging a **Markdown-Driven Configuration** approach, developers can define an agent's identity, behavior, security guardrails, and knowledge strictly through readable `.md` files—requiring zero code changes to iterate on AI behavior.
