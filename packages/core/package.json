@@ -1,6 +1,6 @@
 {
   "name": "@miolab/openknowledge-core",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-c-beta.2",
   "description": "Core routing and LLM logic for OpenKnowledge AI agents.",
   "author": "Lucas Formiga",
   "license": "MIT",
