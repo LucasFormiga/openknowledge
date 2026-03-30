@@ -25,7 +25,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "brace-expansion": ">=2.0.3",
+    "path-to-regexp": ">=0.1.13"
   },
   "packageManager": "npm@10.9.0"
 }
