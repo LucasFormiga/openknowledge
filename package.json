@@ -17,8 +17,8 @@
     "pretest": "npm run check"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.4",
-    "turbo": "^2.8.12",
+    "@biomejs/biome": "^2.4.12",
+    "turbo": "^2.9.6",
     "typescript": "^5.9.3"
   },
   "overrides": {
