@@ -15,6 +15,7 @@ export function WidgetBody({ children, className }: WidgetBodyProps) {
   const { messages, isProcessing, texts } = useWidget()
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: messages and isProcessing are intentional triggers for the scroll effect
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
